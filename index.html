@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0e27">
+  <meta name="description" content="Цифровой помощник для навигации по карьерным возможностям Роскосмоса">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>КосмоNav — Найди свой путь в космосе</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="stars-canvas"></canvas>
+
+  <!-- ======== ЛЕНДИНГ ======== -->
+  <section id="screen-landing" class="screen active">
+    <div class="screen-scroll">
+      <div class="landing-content">
+        <div class="logo-area">
+          <div class="rocket-icon">🚀</div>
+          <h1>Космический<br><span class="gradient-text">Навигатор</span></h1>
+          <p class="subtitle">Роскосмос</p>
+        </div>
+        <p class="landing-desc">Найди свой путь в космической отрасли<br>за <strong>3 минуты</strong></p>
+        <p class="landing-sub">Ответь на 7 вопросов — получи персональный маршрут развития, подходящие стажировки, мероприятия и вакансии</p>
+        <button class="btn-primary btn-glow" id="btn-start">Начать путешествие <span class="btn-rocket">🚀</span></button>
+        <p class="landing-note">Без регистрации · Без персональных данных · Бесплатно</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== ОПРОС ======== -->
+  <section id="screen-quiz" class="screen">
+    <div class="fixed-layout">
+      <!-- Fixed top -->
+      <div class="fixed-top quiz-top">
+        <div class="quiz-header">
+          <button class="btn-back" id="btn-quiz-back">← Назад</button>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+          <span class="progress-label" id="progress-text">1/7</span>
+        </div>
+      </div>
+      <!-- Scrollable middle -->
+      <div class="fixed-middle" id="quiz-scroll">
+        <div class="fixed-middle-inner quiz-inner">
+          <div id="quiz-body"></div>
+        </div>
+      </div>
+      <!-- Fixed bottom -->
+      <div class="fixed-bottom quiz-bottom">
+        <button class="btn-primary" id="btn-next-fixed" disabled>Далее →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== ЗАГРУЗКА ======== -->
+  <section id="screen-loading" class="screen">
+    <div class="screen-scroll">
+      <div class="loading-content">
+        <div class="rocket-launch">🚀</div>
+        <div class="loading-stages">
+          <p class="load-stage active" data-stage="1">🔭 Анализируем твои интересы...</p>
+          <p class="load-stage" data-stage="2">📡 Ищем подходящие возможности...</p>
+          <p class="load-stage" data-stage="3">🗺️ Строим персональный маршрут...</p>
+        </div>
+        <div class="loading-bar-container">
+          <div class="loading-bar" id="loading-bar"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== РЕЗУЛЬТАТЫ ======== -->
+  <section id="screen-results" class="screen">
+    <div class="fixed-layout">
+      <!-- Fixed top -->
+      <div class="fixed-top results-top">
+        <h2 class="results-title">🚀 Твой космический маршрут</h2>
+        <div class="tabs">
+          <button class="tab active" data-tab="profile">👤 Профиль</button>
+          <button class="tab" data-tab="recommendations">🎯 Рекомендации</button>
+          <button class="tab" data-tab="roadmap">🗺️ Маршрут</button>
+        </div>
+      </div>
+      <!-- Scrollable middle -->
+      <div class="fixed-middle" id="results-scroll">
+        <div class="fixed-middle-inner results-inner">
+          <div class="tab-content active" id="tab-profile">
+            <div class="profile-card">
+              <div class="profile-icon" id="profile-icon">🛰️</div>
+              <h3 id="profile-direction">Направление</h3>
+              <p id="profile-level" class="profile-level"></p>
+              <div class="profile-tags" id="profile-tags"></div>
+            </div>
+            <div class="professions-card">
+              <h4>💼 Подходящие профессии в отрасли</h4>
+              <ul id="professions-list"></ul>
+            </div>
+          </div>
+          <div class="tab-content" id="tab-recommendations">
+            <div id="recommendations-list"></div>
+          </div>
+          <div class="tab-content" id="tab-roadmap">
+            <div class="roadmap" id="roadmap"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Fixed bottom -->
+      <div class="fixed-bottom results-bottom">
+        <button class="btn-primary" id="btn-share">📤 Поделиться</button>
+        <button class="btn-secondary" id="btn-restart">🔄 Заново</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>

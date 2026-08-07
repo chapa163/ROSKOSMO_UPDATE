@@ -1,937 +1,292 @@
-/* =====================================================
-   КосмоNav — Космический Навигатор PWA
-   Госкорпорация «Роскосмос»
-   ===================================================== */
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
-if('serviceWorker'in navigator){
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
-
-// ── Stars ───────────────────────────────────────────
 (function(){
-  const c=document.getElementById('stars-canvas'),x=c.getContext('2d');
-  let s=[];
-  function resize(){c.width=innerWidth;c.height=innerHeight}
-  function create(){
-    s=[];const n=Math.floor((c.width*c.height)/3000);
-    for(let i=0;i<n;i++)s.push({
-      x:Math.random()*c.width,y:Math.random()*c.height,
-      r:Math.random()*1.5+.3,a:Math.random(),d:(Math.random()-.5)*.01
-    });
-  }
-  function draw(){
-    x.clearRect(0,0,c.width,c.height);
-    s.forEach(p=>{
-      p.a+=p.d;if(p.a>1||p.a<.1)p.d*=-1;
-      x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);
-      x.fillStyle=`rgba(200,210,255,${p.a})`;x.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-  resize();create();draw();
-  addEventListener('resize',()=>{resize();create()});
+  const c=document.getElementById('stars-canvas'),x=c.getContext('2d');let s=[];
+  function rz(){c.width=innerWidth;c.height=innerHeight}
+  function cr(){s=[];for(let i=0,n=Math.floor(c.width*c.height/3500);i<n;i++)s.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+.3,a:Math.random(),d:(Math.random()-.5)*.01})}
+  function dr(){x.clearRect(0,0,c.width,c.height);s.forEach(p=>{p.a+=p.d;if(p.a>1||p.a<.1)p.d*=-1;x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fillStyle=`rgba(200,210,255,${p.a})`;x.fill()});requestAnimationFrame(dr)}
+  rz();cr();dr();addEventListener('resize',()=>{rz();cr()});
 })();
 
-// ══════════════════════════════════════════════════════
-//  QUESTIONS
-// ══════════════════════════════════════════════════════
-const QUESTIONS=[
-  {
-    id:'level',title:'Кто ты сейчас?',
-    subtitle:'Выбери свой текущий статус',multi:false,
-    options:[
-      {emoji:'🎓',text:'Школьник / абитуриент',tag:'school'},
-      {emoji:'📚',text:'Студент 1–2 курса (вуз или СПО)',tag:'junior_student'},
-      {emoji:'📖',text:'Студент 3–4 курса / магистрант',tag:'senior_student'},
-      {emoji:'🎯',text:'Выпускник / молодой специалист',tag:'young_pro'},
-      {emoji:'💼',text:'Специалист с опытом (2–5 лет)',tag:'mid_pro'}
-    ]
-  },
-  {
-    id:'interest',title:'Что тебя вдохновляет?',
-    subtitle:'Выбери до 3-х направлений',multi:true,maxSelect:3,
-    options:[
-      {emoji:'🚀',text:'Ракеты и космические аппараты',tag:'rockets_spacecraft'},
-      {emoji:'🛰️',text:'Спутники и связь',tag:'satellites'},
-      {emoji:'💻',text:'IT и цифровые технологии',tag:'it_digital'},
-      {emoji:'🔬',text:'Наука и исследования',tag:'science'},
-      {emoji:'📊',text:'Аналитика данных и ИИ',tag:'analytics'},
-      {emoji:'🏗️',text:'Производство и инженерия',tag:'engineering'},
-      {emoji:'📋',text:'Управление проектами',tag:'management'},
-      {emoji:'🌍',text:'Навигация и ДЗЗ',tag:'geo_navigation'}
-    ]
-  },
-  {
-    id:'skill',title:'Какие навыки тебе ближе?',
-    subtitle:'Выбери 2–3 сильных стороны',multi:true,maxSelect:3,
-    options:[
-      {emoji:'⌨️',text:'Программирование (Python, C++, Java)',tag:'programming'},
-      {emoji:'📐',text:'Математика и моделирование',tag:'math'},
-      {emoji:'🖥️',text:'Конструирование / CAD-системы',tag:'cad'},
-      {emoji:'📈',text:'Работа с данными и аналитика',tag:'data'},
-      {emoji:'🗣️',text:'Коммуникация и презентации',tag:'communication'},
-      {emoji:'👥',text:'Лидерство и командная работа',tag:'leadership'},
-      {emoji:'🔌',text:'Электроника и схемотехника',tag:'electronics'},
-      {emoji:'🧩',text:'Системное мышление',tag:'systems_thinking'}
-    ]
-  },
-  {
-    id:'goal',title:'Что ты ищешь прямо сейчас?',
-    subtitle:'Что для тебя сейчас самое актуальное?',multi:false,
-    options:[
-      {emoji:'🏆',text:'Попробовать себя на хакатоне / конкурсе',tag:'competition'},
-      {emoji:'📝',text:'Пройти стажировку или практику',tag:'internship'},
-      {emoji:'🎓',text:'Поступить на целевое обучение',tag:'target_education'},
-      {emoji:'💼',text:'Найти работу в отрасли',tag:'job'},
-      {emoji:'🤝',text:'Присоединиться к проекту',tag:'project'},
-      {emoji:'📅',text:'Посетить форум или мероприятие',tag:'event'},
-      {emoji:'🔍',text:'Просто узнать, что есть',tag:'explore'}
-    ]
-  },
-  {
-    id:'format',title:'Какой формат тебе подходит?',
-    subtitle:'Как тебе удобнее участвовать?',multi:false,
-    options:[
-      {emoji:'🌐',text:'Онлайн / удалённо',tag:'online'},
-      {emoji:'🏢',text:'Очно, готов(а) к переезду',tag:'onsite_relocate'},
-      {emoji:'📍',text:'Очно, в моём городе',tag:'onsite_local'},
-      {emoji:'🔄',text:'Любой формат',tag:'any'}
-    ]
-  },
-  {
-    id:'time',title:'Когда готов(а) начать?',
-    subtitle:'Выбери удобные временные рамки',multi:false,
-    options:[
-      {emoji:'⚡',text:'Сейчас / в ближайший месяц',tag:'now'},
-      {emoji:'📆',text:'В течение полугода',tag:'half_year'},
-      {emoji:'🗓️',text:'В следующем учебном году',tag:'next_year'},
-      {emoji:'👀',text:'Пока присматриваюсь',tag:'exploring'}
-    ]
-  },
-  {
-    id:'experience',title:'Есть ли у тебя релевантный опыт?',
-    subtitle:'Можно выбрать несколько вариантов',multi:true,maxSelect:5,
-    options:[
-      {emoji:'🥇',text:'Участвовал(а) в олимпиадах / конкурсах',tag:'competitions'},
-      {emoji:'🛠️',text:'Есть свои проекты (pet-projects)',tag:'projects'},
-      {emoji:'🏢',text:'Проходил(а) стажировку',tag:'intern_exp'},
-      {emoji:'📘',text:'Учусь по профильной специальности',tag:'profile_edu'},
-      {emoji:'🌱',text:'Нет опыта, но хочу начать',tag:'none'}
-    ]
-  }
+const QS=[
+  {id:'level',t:'Кто ты сейчас?',s:'Выбери свой текущий статус',m:false,o:[
+    {e:'🎓',t:'Школьник / абитуриент',v:'school'},{e:'📚',t:'Студент 1–2 курса (вуз или СПО)',v:'junior_student'},{e:'📖',t:'Студент 3–4 курса / магистрант',v:'senior_student'},{e:'🎯',t:'Выпускник / молодой специалист',v:'young_pro'},{e:'💼',t:'Специалист с опытом (2–5 лет)',v:'mid_pro'}]},
+  {id:'interest',t:'Что тебя вдохновляет?',s:'Выбери до 3-х направлений',m:true,mx:3,o:[
+    {e:'🚀',t:'Ракеты и космические аппараты',v:'rockets'},{e:'🛰️',t:'Спутники и связь',v:'satellites'},{e:'💻',t:'IT и цифровые технологии',v:'it'},{e:'🔬',t:'Наука и исследования',v:'science'},{e:'📊',t:'Аналитика данных и ИИ',v:'analytics'},{e:'🏗️',t:'Производство и инженерия',v:'engineering'},{e:'📋',t:'Управление проектами',v:'management'},{e:'🌍',t:'Навигация и ДЗЗ',v:'geo'}]},
+  {id:'skill',t:'Какие навыки тебе ближе?',s:'Выбери 2–3 сильных стороны',m:true,mx:3,o:[
+    {e:'⌨️',t:'Программирование',v:'prog'},{e:'📐',t:'Математика и моделирование',v:'math'},{e:'🖥️',t:'Конструирование / CAD',v:'cad'},{e:'📈',t:'Работа с данными',v:'data'},{e:'🗣️',t:'Коммуникация',v:'comm'},{e:'👥',t:'Лидерство и командная работа',v:'lead'},{e:'🔌',t:'Электроника',v:'elec'},{e:'🧩',t:'Системное мышление',v:'sys'}]},
+  {id:'goal',t:'Что ты ищешь прямо сейчас?',s:'Что для тебя актуальнее всего?',m:false,o:[
+    {e:'🏆',t:'Хакатон / конкурс',v:'comp'},{e:'📝',t:'Стажировка или практика',v:'intern'},{e:'🎓',t:'Целевое обучение',v:'edu'},{e:'💼',t:'Работа в отрасли',v:'job'},{e:'🤝',t:'Присоединиться к проекту',v:'proj'},{e:'📅',t:'Форум или мероприятие',v:'event'},{e:'🔍',t:'Просто узнать, что есть',v:'explore'}]},
+  {id:'format',t:'Какой формат подходит?',s:'Как удобнее участвовать?',m:false,o:[
+    {e:'🌐',t:'Онлайн / удалённо',v:'online'},{e:'🏢',t:'Очно, готов к переезду',v:'onsite'},{e:'📍',t:'Очно, в моём городе',v:'local'},{e:'🔄',t:'Любой формат',v:'any'}]},
+  {id:'time',t:'Когда готов(а) начать?',s:'Выбери временные рамки',m:false,o:[
+    {e:'⚡',t:'Сейчас / в ближайший месяц',v:'now'},{e:'📆',t:'В течение полугода',v:'half'},{e:'🗓️',t:'В следующем учебном году',v:'next'},{e:'👀',t:'Пока присматриваюсь',v:'later'}]},
+  {id:'exp',t:'Есть ли релевантный опыт?',s:'Можно выбрать несколько',m:true,mx:5,o:[
+    {e:'🥇',t:'Олимпиады / конкурсы',v:'olymp'},{e:'🛠️',t:'Свои проекты',v:'pet'},{e:'🏢',t:'Проходил(а) стажировку',v:'stag'},{e:'📘',t:'Профильная специальность',v:'prof'},{e:'🌱',t:'Нет опыта, хочу начать',v:'none'}]}
 ];
 
-// ══════════════════════════════════════════════════════
-//  OPPORTUNITIES — реальные программы Роскосмоса
-// ══════════════════════════════════════════════════════
-const OPPORTUNITIES=[
-  {
-    id:1,title:'Форум «Команда будущего»',
-    type:'event',typeLabel:'Форум',
-    description:'Флагманский молодёжный форум Роскосмоса: стратегические сессии, проектная работа, лекции руководителей отрасли, встречи с космонавтами и экспертами.',
-    organization:'Госкорпорация «Роскосмос»',format:'Очно',
-    actionUrl:'https://keytostart.space',actionText:'Подать заявку',
-    tags:{
-      level:['senior_student','young_pro','mid_pro'],
-      interest:['rockets_spacecraft','satellites','it_digital','engineering','management','science','analytics','geo_navigation'],
-      skill:['leadership','communication','systems_thinking'],
-      goal:['event','explore','project'],
-      format:['onsite_relocate','any'],
-      time:['now','half_year','next_year','exploring']
-    }
-  },
-  {
-    id:2,title:'Космические смены (Артек, Орлёнок, Океан, Смена)',
-    type:'event',typeLabel:'Образовательная программа',
-    description:'Космические смены для школьников 12–17 лет: ракетостроение, спутникостроение, ДЗЗ, робототехника, программирование.',
-    organization:'Роскосмос / детские центры',format:'Очно (выездные смены)',
-    actionUrl:'https://keytostart.space',actionText:'Узнать о сменах',
-    tags:{
-      level:['school'],
-      interest:['rockets_spacecraft','satellites','it_digital','science','engineering','geo_navigation'],
-      skill:['programming','electronics','math','systems_thinking','leadership'],
-      goal:['event','explore','project'],
-      format:['onsite_relocate','any'],
-      time:['half_year','next_year','exploring']
-    }
-  },
-  {
-    id:3,title:'Программа поощрительных поездок на космодромы',
-    type:'event',typeLabel:'Экскурсионная программа',
-    description:'Поездки на Байконур и Восточный для победителей конкурсов, кейс-чемпионатов и активных участников молодёжных проектов.',
-    organization:'Госкорпорация «Роскосмос»',format:'Очно (Байконур / Восточный)',
-    actionUrl:'https://keytostart.space',actionText:'Условия участия',
-    tags:{
-      level:['school','junior_student','senior_student','young_pro'],
-      interest:['rockets_spacecraft','engineering','satellites','science'],
-      skill:['leadership','systems_thinking','communication'],
-      goal:['event','explore'],
-      format:['onsite_relocate','any'],
-      time:['half_year','next_year','exploring']
-    }
-  },
-  {
-    id:4,title:'Кейс-чемпионат «Орбита поколений»',
-    type:'competition',typeLabel:'Кейс-чемпионат',
-    description:'Всероссийское командное соревнование: школьники, студенты и молодые сотрудники решают реальные кейсы предприятий Роскосмоса.',
-    organization:'Госкорпорация «Роскосмос»',format:'Онлайн-отбор + очный финал',
-    actionUrl:'https://keytostart.space',actionText:'Зарегистрироваться',
-    tags:{
-      level:['school','junior_student','senior_student','young_pro'],
-      interest:['management','it_digital','engineering','analytics','rockets_spacecraft','satellites'],
-      skill:['leadership','communication','systems_thinking','data','programming'],
-      goal:['competition','explore','project'],
-      format:['online','onsite_relocate','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:5,title:'Инженерный хакатон «Кедр»',
-    type:'competition',typeLabel:'Хакатон',
-    description:'Командный хакатон: инженерные и цифровые задачи, моделирование спутниковых систем, технологии ИИ. Призы и менторство экспертов.',
-    organization:'Госкорпорация «Роскосмос»',format:'Онлайн + финал очно',
-    actionUrl:'https://keytostart.space',actionText:'Зарегистрироваться',
-    tags:{
-      level:['junior_student','senior_student','young_pro','mid_pro'],
-      interest:['it_digital','analytics','satellites','geo_navigation','engineering'],
-      skill:['programming','data','math','systems_thinking','electronics'],
-      goal:['competition','explore','project'],
-      format:['online','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:6,title:'Всероссийский конкурс научно-технических работ молодёжи',
-    type:'competition',typeLabel:'Конкурс',
-    description:'Направления: космические технологии, новые материалы, цифровые решения, ИИ, производственные технологии.',
-    organization:'Госкорпорация «Роскосмос»',format:'Заочный отбор + очный финал',
-    actionUrl:'https://keytostart.space',actionText:'Подать работу',
-    tags:{
-      level:['junior_student','senior_student','young_pro'],
-      interest:['science','it_digital','engineering','analytics','rockets_spacecraft'],
-      skill:['math','programming','data','systems_thinking'],
-      goal:['competition','explore','project'],
-      format:['online','onsite_relocate','any'],
-      time:['now','half_year','next_year']
-    }
-  },
-  {
-    id:7,title:'Чемпионат «Молодые профессионалы Роскосмоса»',
-    type:'competition',typeLabel:'Чемпионат',
-    description:'Корпоративный чемпионат профмастерства: развитие навыков, выявление перспективных специалистов, обмен лучшими практиками.',
-    organization:'Госкорпорация «Роскосмос»',format:'Очно на предприятиях',
-    actionUrl:'https://keytostart.space',actionText:'Узнать подробнее',
-    tags:{
-      level:['young_pro','mid_pro','senior_student'],
-      interest:['engineering','rockets_spacecraft','satellites','it_digital'],
-      skill:['cad','electronics','programming','systems_thinking'],
-      goal:['competition','job','explore'],
-      format:['onsite_relocate','onsite_local','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:8,title:'Производственная практика в РКК «Энергия»',
-    type:'internship',typeLabel:'Практика',
-    description:'Практика на ведущем предприятии пилотируемой космонавтики: корабли «Союз», Российская орбитальная станция, реальные проекты.',
-    organization:'РКК «Энергия» (Королёв)',format:'Очно (Королёв, МО)',
-    actionUrl:'https://www.energia.ru/ru/career/career.html',actionText:'Подать заявку',
-    tags:{
-      level:['senior_student'],
-      interest:['rockets_spacecraft','engineering','satellites'],
-      skill:['cad','math','electronics','systems_thinking'],
-      goal:['internship','explore','job'],
-      format:['onsite_relocate','any'],
-      time:['half_year','next_year']
-    }
-  },
-  {
-    id:9,title:'Стажировка в РКЦ «Прогресс»',
-    type:'internship',typeLabel:'Стажировка',
-    description:'Стажировка у крупнейшего производителя ракет-носителей «Союз»: конструкторская документация, производство, испытания.',
-    organization:'РКЦ «Прогресс» (Самара)',format:'Очно (Самара)',
-    actionUrl:'https://www.samspace.ru/about/vacancies/',actionText:'Смотреть вакансии',
-    tags:{
-      level:['senior_student','young_pro'],
-      interest:['rockets_spacecraft','engineering'],
-      skill:['cad','math','systems_thinking','electronics'],
-      goal:['internship','job'],
-      format:['onsite_relocate','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:10,title:'Стажировка в АО «Российские космические системы»',
-    type:'internship',typeLabel:'Стажировка',
-    description:'Навигационные технологии, системы связи, ДЗЗ, геоинформационные сервисы, обработка спутниковых данных. IT и аналитика.',
-    organization:'АО «РКС» (Москва)',format:'Очно / гибрид (Москва)',
-    actionUrl:'https://www.spacecorp.ru/career/',actionText:'Подать заявку',
-    tags:{
-      level:['senior_student','young_pro'],
-      interest:['it_digital','analytics','geo_navigation','satellites'],
-      skill:['programming','data','math','systems_thinking'],
-      goal:['internship','job'],
-      format:['onsite_relocate','online','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:11,title:'Практика на космодроме (АО «ЦЭНКИ»)',
-    type:'internship',typeLabel:'Практика',
-    description:'Практика на космодромах Байконур, Восточный, Плесецк. Подготовка пусковых кампаний, эксплуатация космодромной инфраструктуры.',
-    organization:'АО «ЦЭНКИ»',format:'Очно (Байконур / Восточный)',
-    actionUrl:'https://www.tsenki.com/career/',actionText:'Подать заявку',
-    tags:{
-      level:['senior_student'],
-      interest:['rockets_spacecraft','engineering'],
-      skill:['electronics','cad','systems_thinking','math'],
-      goal:['internship','explore'],
-      format:['onsite_relocate','any'],
-      time:['half_year','next_year']
-    }
-  },
-  {
-    id:12,title:'Стажировка в ИСС им. Решетнёва',
-    type:'internship',typeLabel:'Стажировка',
-    description:'Крупнейший разработчик спутников: спутники связи, ГЛОНАСС, перспективные орбитальные платформы.',
-    organization:'АО «ИСС им. Решетнёва» (Железногорск)',format:'Очно (Железногорск)',
-    actionUrl:'https://www.iss-reshetnev.ru/career',actionText:'Смотреть вакансии',
-    tags:{
-      level:['senior_student','young_pro'],
-      interest:['satellites','engineering','it_digital'],
-      skill:['electronics','programming','cad','math'],
-      goal:['internship','job'],
-      format:['onsite_relocate','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:13,title:'Стажировка в НПО Лавочкина',
-    type:'internship',typeLabel:'Стажировка',
-    description:'Автоматические космические аппараты: межпланетные станции, лунные программы, астрофизические обсерватории.',
-    organization:'АО «НПО Лавочкина» (Химки)',format:'Очно (Химки, МО)',
-    actionUrl:'https://www.laspace.ru/career/',actionText:'Подать заявку',
-    tags:{
-      level:['senior_student','young_pro'],
-      interest:['science','rockets_spacecraft','satellites'],
-      skill:['programming','math','systems_thinking','cad'],
-      goal:['internship','job','project'],
-      format:['onsite_relocate','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:14,title:'Стажировка в проектном офисе Роскосмоса',
-    type:'internship',typeLabel:'Стажировка',
-    description:'Координация крупных программ, аналитика, управление проектами, цифровая трансформация. От 1 до 6 месяцев.',
-    organization:'Госкорпорация «Роскосмос» (Москва)',format:'Очно (Москва)',
-    actionUrl:'https://www.roscosmos.ru/careers/',actionText:'Подать заявку',
-    tags:{
-      level:['senior_student','young_pro'],
-      interest:['management','analytics','it_digital'],
-      skill:['communication','leadership','data','systems_thinking'],
-      goal:['internship','job'],
-      format:['onsite_relocate','onsite_local','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:15,title:'Целевое обучение — МГТУ им. Баумана',
-    type:'education',typeLabel:'Целевое обучение',
-    description:'Ракетостроение и космическая техника. Оплата обучения, стипендия, гарантированное место практики и трудоустройство.',
-    organization:'МГТУ им. Баумана / предприятия Роскосмоса',format:'Очно (Москва)',
-    actionUrl:'https://bmstu.ru/entrant/target-training',actionText:'Условия приёма',
-    tags:{
-      level:['school','junior_student'],
-      interest:['rockets_spacecraft','engineering','satellites'],
-      skill:['math','cad','electronics','systems_thinking'],
-      goal:['target_education','explore'],
-      format:['onsite_relocate','any'],
-      time:['half_year','next_year','exploring']
-    }
-  },
-  {
-    id:16,title:'Целевое обучение — МАИ',
-    type:'education',typeLabel:'Целевое обучение',
-    description:'Аэрокосмические специальности: спутниковые системы, авиастроение, двигатели. Поддержка работодателя и трудоустройство.',
-    organization:'МАИ / предприятия Роскосмоса',format:'Очно (Москва)',
-    actionUrl:'https://mai.ru/entrant/target/',actionText:'Условия приёма',
-    tags:{
-      level:['school','junior_student'],
-      interest:['rockets_spacecraft','satellites','engineering','it_digital'],
-      skill:['math','programming','electronics','cad'],
-      goal:['target_education','explore'],
-      format:['onsite_relocate','any'],
-      time:['half_year','next_year','exploring']
-    }
-  },
-  {
-    id:17,title:'Целевое обучение — Самарский университет',
-    type:'education',typeLabel:'Целевое обучение',
-    description:'Ракетостроение и двигателестроение. Практика на РКЦ «Прогресс» и предприятиях отрасли.',
-    organization:'Самарский университет / РКЦ «Прогресс»',format:'Очно (Самара)',
-    actionUrl:'https://ssau.ru/entrant',actionText:'Условия приёма',
-    tags:{
-      level:['school','junior_student'],
-      interest:['rockets_spacecraft','engineering'],
-      skill:['math','cad','systems_thinking'],
-      goal:['target_education','explore'],
-      format:['onsite_relocate','any'],
-      time:['half_year','next_year','exploring']
-    }
-  },
-  {
-    id:18,title:'Целевое обучение — СибГУ им. Решетнёва',
-    type:'education',typeLabel:'Целевое обучение',
-    description:'Космические специальности. Практика и трудоустройство в ИСС им. Решетнёва — крупнейшем спутникостроительном предприятии.',
-    organization:'СибГУ им. Решетнёва / ИСС',format:'Очно (Красноярск)',
-    actionUrl:'https://www.sibsau.ru/entrant/',actionText:'Условия приёма',
-    tags:{
-      level:['school','junior_student'],
-      interest:['satellites','engineering','it_digital'],
-      skill:['math','electronics','programming','cad'],
-      goal:['target_education','explore'],
-      format:['onsite_relocate','any'],
-      time:['half_year','next_year','exploring']
-    }
-  },
-  {
-    id:19,title:'Вакансии Роскосмоса — единый портал',
-    type:'job',typeLabel:'Вакансии',
-    description:'Единый портал карьерных возможностей: инженерные, IT, управленческие, научные и производственные позиции на предприятиях отрасли.',
-    organization:'Госкорпорация «Роскосмос»',format:'По всей России',
-    actionUrl:'https://www.roscosmos.ru/careers/',actionText:'Смотреть вакансии',
-    tags:{
-      level:['young_pro','mid_pro'],
-      interest:['rockets_spacecraft','satellites','it_digital','science','analytics','engineering','management','geo_navigation'],
-      skill:['programming','math','cad','data','communication','leadership','electronics','systems_thinking'],
-      goal:['job'],
-      format:['onsite_relocate','onsite_local','online','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:20,title:'IT-вакансии — цифровая трансформация',
-    type:'job',typeLabel:'Вакансия',
-    description:'Разработка ПО, Data Science, DevOps, ИИ, кибербезопасность, цифровые двойники, большие данные. Работа над космическими системами.',
-    organization:'РКС / ЦНИИмаш / ЦЭНКИ',format:'Москва / гибрид',
-    actionUrl:'https://www.spacecorp.ru/career/',actionText:'Смотреть IT-вакансии',
-    tags:{
-      level:['young_pro','mid_pro'],
-      interest:['it_digital','analytics','geo_navigation'],
-      skill:['programming','data','math','systems_thinking'],
-      goal:['job'],
-      format:['onsite_relocate','online','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:21,title:'Инженерные вакансии — РКК «Энергия»',
-    type:'job',typeLabel:'Вакансия',
-    description:'Инженер-конструктор, инженер по системам управления, инженер по испытаниям. Пилотируемые корабли и орбитальная станция.',
-    organization:'РКК «Энергия» (Королёв)',format:'Очно (Королёв, МО)',
-    actionUrl:'https://www.energia.ru/ru/career/career.html',actionText:'Откликнуться',
-    tags:{
-      level:['young_pro','mid_pro'],
-      interest:['rockets_spacecraft','engineering','satellites'],
-      skill:['cad','math','electronics','systems_thinking'],
-      goal:['job','internship'],
-      format:['onsite_relocate','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:22,title:'Вакансии НПО Энергомаш — ракетные двигатели',
-    type:'job',typeLabel:'Вакансия',
-    description:'Разработка жидкостных ракетных двигателей, перспективных установок, работа на испытательных комплексах.',
-    organization:'АО «НПО Энергомаш» (Химки)',format:'Очно (Химки, МО)',
-    actionUrl:'https://engine.space/career/',actionText:'Откликнуться',
-    tags:{
-      level:['young_pro','mid_pro'],
-      interest:['rockets_spacecraft','engineering'],
-      skill:['cad','math','electronics','systems_thinking'],
-      goal:['job'],
-      format:['onsite_relocate','any'],
-      time:['now','half_year']
-    }
-  },
-  {
-    id:23,title:'Космические классы Роскосмоса',
-    type:'project',typeLabel:'Профориентация',
-    description:'Ранняя профориентация школьников: космонавтика, робототехника, программирование, спутниковые технологии, инженерное творчество.',
-    organization:'Госкорпорация «Роскосмос»',format:'Очно (по всей России)',
-    actionUrl:'https://keytostart.space',actionText:'Найти свой класс',
-    tags:{
-      level:['school'],
-      interest:['rockets_spacecraft','satellites','it_digital','science','engineering'],
-      skill:['programming','electronics','math','systems_thinking'],
-      goal:['explore','event','project'],
-      format:['onsite_local','any'],
-      time:['now','half_year','next_year','exploring']
-    }
-  },
-  {
-    id:24,title:'Молодёжные проектные команды Роскосмоса',
-    type:'project',typeLabel:'Проект',
-    description:'Работа над задачами реальных предприятий, взаимодействие с экспертами, возможность предложить решение для внедрения.',
-    organization:'Госкорпорация «Роскосмос»',format:'Очно + онлайн',
-    actionUrl:'https://keytostart.space',actionText:'Присоединиться',
-    tags:{
-      level:['junior_student','senior_student','young_pro'],
-      interest:['rockets_spacecraft','satellites','it_digital','engineering','management','analytics','science','geo_navigation'],
-      skill:['programming','cad','data','leadership','systems_thinking','communication'],
-      goal:['project','explore','competition'],
-      format:['online','onsite_relocate','any'],
-      time:['now','half_year','next_year','exploring']
-    }
-  },
-  {
-    id:25,title:'Портал «Ключ на старт» — все возможности',
-    type:'education',typeLabel:'Портал',
-    description:'Единый молодёжный портал Роскосмоса: все мероприятия, стажировки, конкурсы, форумы и проекты в одном месте.',
-    organization:'Госкорпорация «Роскосмос»',format:'Онлайн',
-    actionUrl:'https://keytostart.space',actionText:'Перейти на портал',
-    tags:{
-      level:['school','junior_student','senior_student','young_pro','mid_pro'],
-      interest:['rockets_spacecraft','satellites','it_digital','science','analytics','engineering','management','geo_navigation'],
-      skill:['programming','math','cad','data','communication','leadership','electronics','systems_thinking'],
-      goal:['explore','event','competition','internship','project','target_education','job'],
-      format:['online','any'],
-      time:['now','half_year','next_year','exploring']
-    }
-  }
+const OPS=[
+  {id:1,n:'Форум «Команда будущего»',tp:'event',tl:'Форум',d:'Флагманский молодёжный форум Роскосмоса: стратегические сессии, проектная работа, лекции руководителей, встречи с космонавтами.',org:'Роскосмос',fmt:'Очно',url:'https://keytostart.space',btn:'Подать заявку',
+    tg:{level:['senior_student','young_pro','mid_pro'],interest:['rockets','satellites','it','engineering','management','science','analytics','geo'],skill:['lead','comm','sys'],goal:['event','explore','proj'],format:['onsite','any'],time:['now','half','next','later']}},
+  {id:2,n:'Космические смены (Артек, Орлёнок, Океан)',tp:'event',tl:'Образовательная программа',d:'Космические смены для школьников 12–17 лет: ракетостроение, спутники, ДЗЗ, робототехника, программирование.',org:'Роскосмос / детские центры',fmt:'Очно (выездные)',url:'https://keytostart.space',btn:'Узнать о сменах',
+    tg:{level:['school'],interest:['rockets','satellites','it','science','engineering','geo'],skill:['prog','elec','math','sys','lead'],goal:['event','explore','proj'],format:['onsite','any'],time:['half','next','later']}},
+  {id:3,n:'Поездки на космодромы',tp:'event',tl:'Экскурсия',d:'Поездки на Байконур и Восточный для победителей конкурсов и активных участников молодёжных проектов.',org:'Роскосмос',fmt:'Очно',url:'https://keytostart.space',btn:'Условия участия',
+    tg:{level:['school','junior_student','senior_student','young_pro'],interest:['rockets','engineering','satellites','science'],skill:['lead','sys','comm'],goal:['event','explore'],format:['onsite','any'],time:['half','next','later']}},
+  {id:4,n:'Кейс-чемпионат «Орбита поколений»',tp:'competition',tl:'Кейс-чемпионат',d:'Командное соревнование: школьники, студенты и сотрудники решают реальные кейсы предприятий Роскосмоса.',org:'Роскосмос',fmt:'Онлайн + очный финал',url:'https://keytostart.space',btn:'Зарегистрироваться',
+    tg:{level:['school','junior_student','senior_student','young_pro'],interest:['management','it','engineering','analytics','rockets','satellites'],skill:['lead','comm','sys','data','prog'],goal:['comp','explore','proj'],format:['online','onsite','any'],time:['now','half']}},
+  {id:5,n:'Инженерный хакатон «Кедр»',tp:'competition',tl:'Хакатон',d:'Командный хакатон: инженерные и цифровые задачи, моделирование спутниковых систем, технологии ИИ.',org:'Роскосмос',fmt:'Онлайн + финал очно',url:'https://keytostart.space',btn:'Зарегистрироваться',
+    tg:{level:['junior_student','senior_student','young_pro','mid_pro'],interest:['it','analytics','satellites','geo','engineering'],skill:['prog','data','math','sys','elec'],goal:['comp','explore','proj'],format:['online','any'],time:['now','half']}},
+  {id:6,n:'Конкурс научно-технических работ молодёжи',tp:'competition',tl:'Конкурс',d:'Космические технологии, новые материалы, цифровые решения, ИИ, производственные технологии.',org:'Роскосмос',fmt:'Заочный + очный финал',url:'https://keytostart.space',btn:'Подать работу',
+    tg:{level:['junior_student','senior_student','young_pro'],interest:['science','it','engineering','analytics','rockets'],skill:['math','prog','data','sys'],goal:['comp','explore','proj'],format:['online','onsite','any'],time:['now','half','next']}},
+  {id:7,n:'Чемпионат «Молодые профессионалы Роскосмоса»',tp:'competition',tl:'Чемпионат',d:'Корпоративный чемпионат профмастерства: развитие навыков, выявление перспективных специалистов.',org:'Роскосмос',fmt:'Очно',url:'https://keytostart.space',btn:'Узнать подробнее',
+    tg:{level:['young_pro','mid_pro','senior_student'],interest:['engineering','rockets','satellites','it'],skill:['cad','elec','prog','sys'],goal:['comp','job','explore'],format:['onsite','local','any'],time:['now','half']}},
+  {id:8,n:'Практика в РКК «Энергия»',tp:'internship',tl:'Практика',d:'Ведущее предприятие пилотируемой космонавтики: корабли «Союз», Российская орбитальная станция.',org:'РКК «Энергия» (Королёв)',fmt:'Очно',url:'https://www.energia.ru/ru/career/career.html',btn:'Подать заявку',
+    tg:{level:['senior_student'],interest:['rockets','engineering','satellites'],skill:['cad','math','elec','sys'],goal:['intern','explore','job'],format:['onsite','any'],time:['half','next']}},
+  {id:9,n:'Стажировка в РКЦ «Прогресс»',tp:'internship',tl:'Стажировка',d:'Крупнейший производитель ракет-носителей «Союз»: конструкторская документация, производство, испытания.',org:'РКЦ «Прогресс» (Самара)',fmt:'Очно',url:'https://www.samspace.ru/about/vacancies/',btn:'Смотреть вакансии',
+    tg:{level:['senior_student','young_pro'],interest:['rockets','engineering'],skill:['cad','math','sys','elec'],goal:['intern','job'],format:['onsite','any'],time:['now','half']}},
+  {id:10,n:'Стажировка в АО «РКС»',tp:'internship',tl:'Стажировка',d:'Навигационные технологии, системы связи, ДЗЗ, геоинформационные сервисы, обработка спутниковых данных.',org:'АО «РКС» (Москва)',fmt:'Очно / гибрид',url:'https://www.spacecorp.ru/career/',btn:'Подать заявку',
+    tg:{level:['senior_student','young_pro'],interest:['it','analytics','geo','satellites'],skill:['prog','data','math','sys'],goal:['intern','job'],format:['onsite','online','any'],time:['now','half']}},
+  {id:11,n:'Практика на космодроме (ЦЭНКИ)',tp:'internship',tl:'Практика',d:'Космодромы Байконур, Восточный, Плесецк. Подготовка пусковых кампаний.',org:'АО «ЦЭНКИ»',fmt:'Очно',url:'https://www.tsenki.com/career/',btn:'Подать заявку',
+    tg:{level:['senior_student'],interest:['rockets','engineering'],skill:['elec','cad','sys','math'],goal:['intern','explore'],format:['onsite','any'],time:['half','next']}},
+  {id:12,n:'Стажировка в ИСС им. Решетнёва',tp:'internship',tl:'Стажировка',d:'Крупнейший разработчик спутников: связь, ГЛОНАСС, перспективные платформы.',org:'ИСС (Железногорск)',fmt:'Очно',url:'https://www.iss-reshetnev.ru/career',btn:'Смотреть вакансии',
+    tg:{level:['senior_student','young_pro'],interest:['satellites','engineering','it'],skill:['elec','prog','cad','math'],goal:['intern','job'],format:['onsite','any'],time:['now','half']}},
+  {id:13,n:'Стажировка в НПО Лавочкина',tp:'internship',tl:'Стажировка',d:'Автоматические КА: межпланетные станции, лунные программы, обсерватории.',org:'НПО Лавочкина (Химки)',fmt:'Очно',url:'https://www.laspace.ru/career/',btn:'Подать заявку',
+    tg:{level:['senior_student','young_pro'],interest:['science','rockets','satellites'],skill:['prog','math','sys','cad'],goal:['intern','job','proj'],format:['onsite','any'],time:['now','half']}},
+  {id:14,n:'Стажировка в проектном офисе Роскосмоса',tp:'internship',tl:'Стажировка',d:'Координация программ, аналитика, управление проектами, цифровая трансформация. 1–6 месяцев.',org:'Роскосмос (Москва)',fmt:'Очно',url:'https://www.roscosmos.ru/careers/',btn:'Подать заявку',
+    tg:{level:['senior_student','young_pro'],interest:['management','analytics','it'],skill:['comm','lead','data','sys'],goal:['intern','job'],format:['onsite','local','any'],time:['now','half']}},
+  {id:15,n:'Целевое — МГТУ им. Баумана',tp:'education',tl:'Целевое обучение',d:'Ракетостроение и космическая техника. Оплата, стипендия, гарантированное трудоустройство.',org:'МГТУ / Роскосмос',fmt:'Очно (Москва)',url:'https://bmstu.ru/entrant/target-training',btn:'Условия приёма',
+    tg:{level:['school','junior_student'],interest:['rockets','engineering','satellites'],skill:['math','cad','elec','sys'],goal:['edu','explore'],format:['onsite','any'],time:['half','next','later']}},
+  {id:16,n:'Целевое — МАИ',tp:'education',tl:'Целевое обучение',d:'Аэрокосмические специальности: спутниковые системы, авиастроение, двигатели.',org:'МАИ / Роскосмос',fmt:'Очно (Москва)',url:'https://mai.ru/entrant/target/',btn:'Условия приёма',
+    tg:{level:['school','junior_student'],interest:['rockets','satellites','engineering','it'],skill:['math','prog','elec','cad'],goal:['edu','explore'],format:['onsite','any'],time:['half','next','later']}},
+  {id:17,n:'Целевое — Самарский университет',tp:'education',tl:'Целевое обучение',d:'Ракетостроение и двигателестроение. Практика на РКЦ «Прогресс».',org:'Самарский ун-т / РКЦ',fmt:'Очно (Самара)',url:'https://ssau.ru/entrant',btn:'Условия приёма',
+    tg:{level:['school','junior_student'],interest:['rockets','engineering'],skill:['math','cad','sys'],goal:['edu','explore'],format:['onsite','any'],time:['half','next','later']}},
+  {id:18,n:'Целевое — СибГУ им. Решетнёва',tp:'education',tl:'Целевое обучение',d:'Космические специальности. Практика и трудоустройство в ИСС им. Решетнёва.',org:'СибГУ / ИСС',fmt:'Очно (Красноярск)',url:'https://www.sibsau.ru/entrant/',btn:'Условия приёма',
+    tg:{level:['school','junior_student'],interest:['satellites','engineering','it'],skill:['math','elec','prog','cad'],goal:['edu','explore'],format:['onsite','any'],time:['half','next','later']}},
+  {id:19,n:'Вакансии Роскосмоса',tp:'job',tl:'Вакансии',d:'Единый портал: инженерные, IT, управленческие, научные и производственные позиции.',org:'Роскосмос',fmt:'По всей России',url:'https://www.roscosmos.ru/careers/',btn:'Смотреть вакансии',
+    tg:{level:['young_pro','mid_pro'],interest:['rockets','satellites','it','science','analytics','engineering','management','geo'],skill:['prog','math','cad','data','comm','lead','elec','sys'],goal:['job'],format:['onsite','local','online','any'],time:['now','half']}},
+  {id:20,n:'IT-вакансии — цифровая трансформация',tp:'job',tl:'Вакансия',d:'Разработка ПО, Data Science, DevOps, ИИ, кибербезопасность, цифровые двойники.',org:'РКС / ЦНИИмаш',fmt:'Москва / гибрид',url:'https://www.spacecorp.ru/career/',btn:'Смотреть IT-вакансии',
+    tg:{level:['young_pro','mid_pro'],interest:['it','analytics','geo'],skill:['prog','data','math','sys'],goal:['job'],format:['onsite','online','any'],time:['now','half']}},
+  {id:21,n:'Инженерные вакансии — РКК «Энергия»',tp:'job',tl:'Вакансия',d:'Инженер-конструктор, системы управления, испытания. Пилотируемые корабли и орбитальная станция.',org:'РКК «Энергия»',fmt:'Очно (Королёв)',url:'https://www.energia.ru/ru/career/career.html',btn:'Откликнуться',
+    tg:{level:['young_pro','mid_pro'],interest:['rockets','engineering','satellites'],skill:['cad','math','elec','sys'],goal:['job','intern'],format:['onsite','any'],time:['now','half']}},
+  {id:22,n:'Вакансии НПО Энергомаш',tp:'job',tl:'Вакансия',d:'Жидкостные ракетные двигатели, перспективные установки, испытательные комплексы.',org:'НПО Энергомаш (Химки)',fmt:'Очно',url:'https://engine.space/career/',btn:'Откликнуться',
+    tg:{level:['young_pro','mid_pro'],interest:['rockets','engineering'],skill:['cad','math','elec','sys'],goal:['job'],format:['onsite','any'],time:['now','half']}},
+  {id:23,n:'Космические классы Роскосмоса',tp:'project',tl:'Профориентация',d:'Ранняя профориентация: космонавтика, робототехника, программирование, спутниковые технологии.',org:'Роскосмос',fmt:'Очно (вся Россия)',url:'https://keytostart.space',btn:'Найти свой класс',
+    tg:{level:['school'],interest:['rockets','satellites','it','science','engineering'],skill:['prog','elec','math','sys'],goal:['explore','event','proj'],format:['local','any'],time:['now','half','next','later']}},
+  {id:24,n:'Молодёжные проектные команды',tp:'project',tl:'Проект',d:'Работа над задачами реальных предприятий, взаимодействие с экспертами, решения для внедрения.',org:'Роскосмос',fmt:'Очно + онлайн',url:'https://keytostart.space',btn:'Присоединиться',
+    tg:{level:['junior_student','senior_student','young_pro'],interest:['rockets','satellites','it','engineering','management','analytics','science','geo'],skill:['prog','cad','data','lead','sys','comm'],goal:['proj','explore','comp'],format:['online','onsite','any'],time:['now','half','next','later']}},
+  {id:25,n:'Портал «Ключ на старт»',tp:'education',tl:'Портал',d:'Единый молодёжный портал: все мероприятия, стажировки, конкурсы, форумы и проекты.',org:'Роскосмос',fmt:'Онлайн',url:'https://keytostart.space',btn:'Перейти на портал',
+    tg:{level:['school','junior_student','senior_student','young_pro','mid_pro'],interest:['rockets','satellites','it','science','analytics','engineering','management','geo'],skill:['prog','math','cad','data','comm','lead','elec','sys'],goal:['explore','event','comp','intern','proj','edu','job'],format:['online','any'],time:['now','half','next','later']}}
 ];
 
-// ══════════════════════════════════════════════════════
-//  PROFESSIONS MAP
-// ══════════════════════════════════════════════════════
-const PROF_MAP={
-  'rockets_spacecraft+programming':['Разработчик бортового ПО','Инженер по системам управления'],
-  'rockets_spacecraft+math':['Баллистик','Инженер по динамике полёта'],
-  'rockets_spacecraft+cad':['Инженер-конструктор РН','Инженер-проектировщик КА'],
-  'rockets_spacecraft+electronics':['Инженер бортовых систем','Специалист по телеметрии'],
-  'rockets_spacecraft+systems_thinking':['Инженер по надёжности','Инженер по компоновке КА'],
-  'satellites+programming':['Разработчик ПО спутниковых систем','Backend-инженер наземных станций'],
-  'satellites+electronics':['Инженер спутниковой связи','Разработчик бортовой аппаратуры'],
+const PM={
+  'rockets+prog':['Разработчик бортового ПО','Инженер систем управления'],
+  'rockets+math':['Баллистик','Инженер динамики полёта'],
+  'rockets+cad':['Инженер-конструктор РН','Проектировщик КА'],
+  'rockets+elec':['Инженер бортовых систем','Специалист по телеметрии'],
+  'rockets+sys':['Инженер по надёжности','Инженер по компоновке КА'],
+  'satellites+prog':['Разработчик ПО спутников','Backend-инженер наземных станций'],
+  'satellites+elec':['Инженер спутниковой связи','Разработчик бортовой аппаратуры'],
   'satellites+data':['Аналитик спутниковых данных','Инженер обработки сигналов'],
-  'satellites+cad':['Конструктор космических аппаратов','Инженер по компоновке КА'],
-  'it_digital+programming':['Fullstack-разработчик','Инженер-программист','DevOps-инженер'],
-  'it_digital+data':['Data Engineer космических данных','ML-инженер'],
-  'it_digital+systems_thinking':['Системный архитектор','Специалист по кибербезопасности'],
-  'science+math':['Учёный-баллистик','Астрофизик-исследователь'],
-  'science+data':['Научный аналитик','Специалист по космическим экспериментам'],
-  'science+systems_thinking':['Исследователь космических систем','Инженер-исследователь'],
-  'analytics+data':['Data Scientist','Аналитик данных ДЗЗ'],
-  'analytics+programming':['ML-инженер','Аналитик больших данных'],
-  'analytics+math':['Аналитик эффективности миссий','Специалист по ИИ'],
+  'satellites+cad':['Конструктор КА','Инженер по компоновке'],
+  'it+prog':['Fullstack-разработчик','DevOps-инженер','Инженер-программист'],
+  'it+data':['Data Engineer','ML-инженер'],
+  'it+sys':['Системный архитектор','Специалист по кибербезопасности'],
+  'science+math':['Учёный-баллистик','Астрофизик'],
+  'science+data':['Научный аналитик','Специалист по экспериментам'],
+  'analytics+data':['Data Scientist','Аналитик ДЗЗ'],
+  'analytics+prog':['ML-инженер','Аналитик больших данных'],
   'engineering+cad':['Инженер-конструктор','Инженер-технолог'],
-  'engineering+electronics':['Электромонтажник космической техники','Специалист по испытаниям'],
+  'engineering+elec':['Электромонтажник КТ','Специалист по испытаниям'],
   'engineering+math':['Инженер-расчётчик','Инженер по прочности'],
-  'engineering+systems_thinking':['Инженер по надёжности','Специалист по контролю качества'],
-  'management+leadership':['Руководитель проекта','Менеджер космической программы'],
-  'management+communication':['Координатор проектного офиса','Системный аналитик'],
-  'management+systems_thinking':['Продуктовый менеджер','Менеджер по цифровой трансформации'],
-  'geo_navigation+data':['Специалист по ДЗЗ','Геоинформатик'],
-  'geo_navigation+programming':['Разработчик ГИС','Инженер навигационных систем ГЛОНАСС'],
-  'geo_navigation+math':['Геодезист-навигатор','Специалист по ГЛОНАСС']
+  'management+lead':['Руководитель проекта','Менеджер программы'],
+  'management+comm':['Координатор проектного офиса','Системный аналитик'],
+  'management+sys':['Продуктовый менеджер','Менеджер цифровой трансформации'],
+  'geo+data':['Специалист по ДЗЗ','Геоинформатик'],
+  'geo+prog':['Разработчик ГИС','Инженер ГЛОНАСС'],
+  'geo+math':['Геодезист-навигатор','Специалист по ГЛОНАСС']
 };
 
-// ══════════════════════════════════════════════════════
-//  LABELS
-// ══════════════════════════════════════════════════════
-const DIR_LABELS={
-  rockets_spacecraft:'Ракетостроение и космические аппараты',
-  satellites:'Спутниковые системы и связь',
-  it_digital:'IT и цифровая трансформация',
-  science:'Научные космические исследования',
-  analytics:'Аналитика данных и ИИ',
-  engineering:'Производство и инженерия',
-  management:'Управление проектами',
-  geo_navigation:'Навигация ГЛОНАСС и ДЗЗ'
-};
-const DIR_ICONS={
-  rockets_spacecraft:'🚀',satellites:'🛰️',it_digital:'💻',
-  science:'🔬',analytics:'📊',engineering:'🏗️',
-  management:'📋',geo_navigation:'🌍'
-};
-const LVL_LABELS={
-  school:'Школьник / абитуриент',junior_student:'Студент младших курсов',
-  senior_student:'Студент старших курсов',young_pro:'Молодой специалист',
-  mid_pro:'Специалист с опытом'
-};
-const SKILL_LABELS={
-  programming:'Программирование',math:'Математика',
-  cad:'CAD/Конструирование',data:'Работа с данными',
-  communication:'Коммуникация',leadership:'Лидерство',
-  electronics:'Электроника',systems_thinking:'Системное мышление'
+const DL={rockets:'Ракетостроение и КА',satellites:'Спутниковые системы',it:'IT и цифровая трансформация',science:'Научные исследования',analytics:'Аналитика данных и ИИ',engineering:'Производство и инженерия',management:'Управление проектами',geo:'Навигация и ДЗЗ'};
+const DI={rockets:'🚀',satellites:'🛰️',it:'💻',science:'🔬',analytics:'📊',engineering:'🏗️',management:'📋',geo:'🌍'};
+const LL={school:'Школьник',junior_student:'Студент младших курсов',senior_student:'Студент старших курсов',young_pro:'Молодой специалист',mid_pro:'Специалист с опытом'};
+const SL={prog:'Программирование',math:'Математика',cad:'CAD/Конструирование',data:'Работа с данными',comm:'Коммуникация',lead:'Лидерство',elec:'Электроника',sys:'Системное мышление'};
+
+const RM={
+  rockets:{t:'Конструктор космической техники',s:[{l:'Космический класс',t:'Старт'},{l:'МАИ / МГТУ / Самарский ун-т',t:'Обучение'},{l:'Целевое обучение',t:'Поддержка'},{l:'Практика в РКК «Энергия» / РКЦ «Прогресс»',t:'Опыт'},{l:'Молодой инженер-конструктор',t:'Карьера'},{l:'Ведущий инженер → Главный конструктор',t:'Рост'}]},
+  it:{t:'Специалист по ИИ и цифровым технологиям',s:[{l:'Олимпиады по программированию',t:'Старт'},{l:'Хакатон «Кедр»',t:'Опыт'},{l:'Обучение IT',t:'Обучение'},{l:'Стажировка в РКС / ЦНИИмаш',t:'Стажировка'},{l:'ML-инженер / разработчик',t:'Карьера'},{l:'Руководитель цифрового продукта',t:'Рост'}]},
+  management:{t:'Руководитель проектов',s:[{l:'Студенческое самоуправление',t:'Старт'},{l:'Форум «Команда будущего»',t:'Нетворкинг'},{l:'Кейс-чемпионат «Орбита поколений»',t:'Опыт'},{l:'Проектный офис',t:'Стажировка'},{l:'Менеджер проекта',t:'Карьера'},{l:'Директор направления',t:'Рост'}]},
+  science:{t:'Исследователь космоса',s:[{l:'Научные конференции',t:'Старт'},{l:'Университет (физика)',t:'Обучение'},{l:'НИР',t:'Наука'},{l:'НПО Лавочкина / ЦНИИмаш',t:'Стажировка'},{l:'Научный сотрудник',t:'Карьера'},{l:'Руководитель научного проекта',t:'Рост'}]},
+  engineering:{t:'Специалист производства',s:[{l:'Колледж / тех. вуз',t:'Обучение'},{l:'Практика на предприятии',t:'Опыт'},{l:'Чемпионат «Молодые профессионалы»',t:'Мастерство'},{l:'Инженер-технолог',t:'Карьера'},{l:'Начальник участка',t:'Рост'},{l:'Руководитель производства',t:'Перспектива'}]},
+  analytics:{t:'Аналитик данных в космосе',s:[{l:'Обучение Data Science',t:'Обучение'},{l:'Хакатон «Кедр» / проекты ДЗЗ',t:'Опыт'},{l:'Стажировка в РКС',t:'Стажировка'},{l:'Data Scientist',t:'Карьера'},{l:'ML-инженер',t:'Рост'},{l:'Руководитель аналитики',t:'Перспектива'}]},
+  satellites:{t:'Инженер спутниковых систем',s:[{l:'МАИ / СибГУ',t:'Обучение'},{l:'Целевое от ИСС',t:'Поддержка'},{l:'Стажировка в ИСС',t:'Опыт'},{l:'Инженер спутниковых систем',t:'Карьера'},{l:'Ведущий инженер',t:'Рост'},{l:'Главный конструктор',t:'Перспектива'}]},
+  geo:{t:'Специалист навигации и ДЗЗ',s:[{l:'Обучение ГИС',t:'Обучение'},{l:'Проекты ДЗЗ / хакатоны',t:'Опыт'},{l:'Стажировка в РКС',t:'Стажировка'},{l:'Специалист ДЗЗ / ГЛОНАСС',t:'Карьера'},{l:'Ведущий специалист',t:'Рост'},{l:'Руководитель направления',t:'Перспектива'}]}
 };
 
-// ══════════════════════════════════════════════════════
-//  CAREER ROADMAPS
-// ══════════════════════════════════════════════════════
-const CAREER_ROADMAPS={
-  rockets_spacecraft:{
-    title:'Будущий конструктор космической техники',
-    steps:[
-      {label:'Космический класс / профильная школа',time:'Старт'},
-      {label:'МАИ / МГТУ им. Баумана / Самарский ун-т',time:'Обучение'},
-      {label:'Целевое обучение от предприятия',time:'Финансирование'},
-      {label:'Практика в РКК «Энергия» / РКЦ «Прогресс»',time:'Опыт'},
-      {label:'Молодой инженер-конструктор',time:'Карьера'},
-      {label:'Ведущий инженер → Главный конструктор',time:'Рост'}
-    ]
-  },
-  it_digital:{
-    title:'Специалист по ИИ и цифровым технологиям',
-    steps:[
-      {label:'Олимпиады по программированию',time:'Старт'},
-      {label:'Хакатон «Кедр» / кейс-чемпионат',time:'Опыт'},
-      {label:'Обучение по направлению IT',time:'Обучение'},
-      {label:'Стажировка в РКС / ЦНИИмаш',time:'Стажировка'},
-      {label:'ML-инженер / разработчик ПО',time:'Карьера'},
-      {label:'Руководитель цифрового продукта',time:'Рост'}
-    ]
-  },
-  management:{
-    title:'Руководитель проектов',
-    steps:[
-      {label:'Студенческое самоуправление / лидерство',time:'Старт'},
-      {label:'Форум «Команда будущего»',time:'Нетворкинг'},
-      {label:'Кейс-чемпионат «Орбита поколений»',time:'Опыт'},
-      {label:'Проектный офис предприятия',time:'Стажировка'},
-      {label:'Менеджер проекта',time:'Карьера'},
-      {label:'Руководитель программы → Директор направления',time:'Рост'}
-    ]
-  },
-  science:{
-    title:'Исследователь космоса',
-    steps:[
-      {label:'Космический класс / научные конференции',time:'Старт'},
-      {label:'Университет (физика, астрономия)',time:'Обучение'},
-      {label:'Научно-исследовательская работа',time:'Наука'},
-      {label:'НПО Лавочкина / ЦНИИмаш / ИМБП РАН',time:'Стажировка'},
-      {label:'Научный сотрудник',time:'Карьера'},
-      {label:'Руководитель научного проекта',time:'Рост'}
-    ]
-  },
-  engineering:{
-    title:'Специалист производственного контура',
-    steps:[
-      {label:'Колледж / технический вуз',time:'Обучение'},
-      {label:'Практика на предприятии отрасли',time:'Опыт'},
-      {label:'Чемпионат «Молодые профессионалы Роскосмоса»',time:'Мастерство'},
-      {label:'Инженер-технолог / мастер участка',time:'Карьера'},
-      {label:'Начальник участка',time:'Рост'},
-      {label:'Руководитель производственного направления',time:'Перспектива'}
-    ]
-  },
-  analytics:{
-    title:'Аналитик данных и ИИ в космосе',
-    steps:[
-      {label:'Обучение Data Science / аналитике',time:'Обучение'},
-      {label:'ИИ-хакатон «Кедр» / проекты по ДЗЗ',time:'Опыт'},
-      {label:'Стажировка в РКС / ЦНИИмаш',time:'Стажировка'},
-      {label:'Data Scientist / аналитик ДЗЗ',time:'Карьера'},
-      {label:'ML-инженер',time:'Рост'},
-      {label:'Руководитель направления аналитики',time:'Перспектива'}
-    ]
-  },
-  satellites:{
-    title:'Инженер спутниковых систем',
-    steps:[
-      {label:'Профильное обучение (МАИ / СибГУ)',time:'Обучение'},
-      {label:'Целевое обучение от ИСС им. Решетнёва',time:'Финансирование'},
-      {label:'Практика / стажировка в ИСС',time:'Опыт'},
-      {label:'Инженер спутниковых систем',time:'Карьера'},
-      {label:'Ведущий инженер / конструктор КА',time:'Рост'},
-      {label:'Главный конструктор проекта',time:'Перспектива'}
-    ]
-  },
-  geo_navigation:{
-    title:'Специалист по навигации и ДЗЗ',
-    steps:[
-      {label:'Обучение ГИС / геоинформатика',time:'Обучение'},
-      {label:'Проекты по ДЗЗ / хакатоны',time:'Опыт'},
-      {label:'Стажировка в РКС',time:'Стажировка'},
-      {label:'Специалист по ДЗЗ / инженер ГЛОНАСС',time:'Карьера'},
-      {label:'Ведущий специалист',time:'Рост'},
-      {label:'Руководитель геоинформационного направления',time:'Перспектива'}
-    ]
-  }
-};
-
-// ══════════════════════════════════════════════════════
-//  SCORING
-// ══════════════════════════════════════════════════════
-const W={goal:.30,interest:.25,level:.20,skill:.15,format:.05,time:.05};
-
-// ══════════════════════════════════════════════════════
-//  STATE & DOM
-// ══════════════════════════════════════════════════════
-const state={cur:0,ans:{}};
+const WT={goal:.30,interest:.25,level:.20,skill:.15,format:.05,time:.05};
+const st={c:0,a:{}};
 const $=id=>document.getElementById(id);
 
-const screens={
-  landing:$('screen-landing'),quiz:$('screen-quiz'),
-  loading:$('screen-loading'),results:$('screen-results')
-};
-
-function showScreen(n){
-  Object.values(screens).forEach(s=>s.classList.remove('active'));
-  screens[n].classList.add('active');
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
 }
 
-// ══════════════════════════════════════════════════════
-//  QUIZ
-// ══════════════════════════════════════════════════════
-function renderQ(idx){
-  const q=QUESTIONS[idx],body=$('quiz-body'),sel=state.ans[q.id]||[];
+// ═══ QUIZ ═══
+function renderQ(){
+  const q=QS[st.c],sel=st.a[q.id]||[];
 
-  let h=`<div class="quiz-question">
-    <h2>${q.title}</h2><p>${q.subtitle}</p></div>`;
+  // title in fixed top
+  $('q-title').innerHTML=`<h2>${q.t}</h2><p>${q.s}</p>`;
 
-  if(q.multi) h+=`<div class="multi-hint">💡 Можно выбрать до ${q.maxSelect}</div>`;
-
-  h+='<div class="quiz-options">';
-  q.options.forEach(o=>{
-    const s=sel.includes(o.tag)?'selected':'';
-    h+=`<div class="quiz-option ${s}" data-tag="${o.tag}">
-      <span class="opt-emoji">${o.emoji}</span>
-      <span class="opt-text">${o.text}</span></div>`;
+  // options in scrollable middle
+  let h='';
+  if(q.m) h+=`<div class="m-hint">💡 Можно выбрать до ${q.mx}</div>`;
+  h+='<div class="q-opts">';
+  q.o.forEach(o=>{
+    h+=`<div class="q-opt${sel.includes(o.v)?' sel':''}" data-v="${o.v}"><span class="e">${o.e}</span><span class="t">${o.t}</span></div>`;
   });
   h+='</div>';
+  $('q-options').innerHTML=h;
 
-  body.innerHTML=h;
+  // progress
+  $('bar').style.width=((st.c+1)/QS.length*100)+'%';
+  $('bar-label').textContent=(st.c+1)+'/'+QS.length;
 
-  // Progress
-  $('progress-bar').style.width=`${((idx+1)/QUESTIONS.length)*100}%`;
-  $('progress-text').textContent=`${idx+1}/${QUESTIONS.length}`;
+  // next button
+  const b=$('btn-next');
+  b.textContent=st.c===QS.length-1?'Получить маршрут 🚀':'Далее →';
+  b.disabled=!sel.length;
 
-  // Fixed next button
-  const btn=$('btn-next-fixed');
-  btn.textContent=idx===QUESTIONS.length-1?'Получить маршрут 🚀':'Далее →';
-  btn.disabled=!sel.length;
-
-  // Bind clicks
-  body.querySelectorAll('.quiz-option').forEach(el=>{
-    el.addEventListener('click',()=>clickOpt(el,q));
+  // bind
+  $('q-options').querySelectorAll('.q-opt').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const v=el.dataset.v;
+      if(q.m){
+        if(!st.a[q.id])st.a[q.id]=[];
+        const a=st.a[q.id],i=a.indexOf(v);
+        if(i>-1){a.splice(i,1);el.classList.remove('sel')}
+        else{
+          if(a.length>=q.mx)return;
+          if(v!=='none'&&a.includes('none')){a.splice(a.indexOf('none'),1);document.querySelector('.q-opt[data-v="none"]')?.classList.remove('sel')}
+          if(v==='none'){a.length=0;document.querySelectorAll('.q-opt.sel').forEach(o=>o.classList.remove('sel'))}
+          a.push(v);el.classList.add('sel');
+        }
+      }else{
+        st.a[q.id]=[v];
+        document.querySelectorAll('.q-opt').forEach(o=>o.classList.remove('sel'));
+        el.classList.add('sel');
+      }
+      $('btn-next').disabled=!(st.a[q.id]||[]).length;
+    });
   });
 
-  // Scroll to top
-  $('quiz-scroll').scrollTop=0;
+  $('quiz-mid').scrollTop=0;
 }
 
-function clickOpt(el,q){
-  const tag=el.dataset.tag;
-  if(q.multi){
-    if(!state.ans[q.id]) state.ans[q.id]=[];
-    const a=state.ans[q.id],i=a.indexOf(tag);
-    if(i>-1){a.splice(i,1);el.classList.remove('selected')}
-    else{
-      if(a.length>=q.maxSelect) return;
-      if(tag!=='none'&&a.includes('none')){
-        a.splice(a.indexOf('none'),1);
-        document.querySelector('.quiz-option[data-tag="none"]')?.classList.remove('selected');
-      }
-      if(tag==='none'){
-        a.length=0;
-        document.querySelectorAll('.quiz-option.selected').forEach(o=>o.classList.remove('selected'));
-      }
-      a.push(tag);el.classList.add('selected');
-    }
-  } else {
-    state.ans[q.id]=[tag];
-    document.querySelectorAll('.quiz-option').forEach(o=>o.classList.remove('selected'));
-    el.classList.add('selected');
-  }
-  $('btn-next-fixed').disabled=!(state.ans[q.id]||[]).length;
-}
-
-function nextQ(){
-  if(state.cur<QUESTIONS.length-1){state.cur++;renderQ(state.cur)}
-  else startLoad();
-}
-
-// ══════════════════════════════════════════════════════
-//  LOADING
-// ══════════════════════════════════════════════════════
-function startLoad(){
-  showScreen('loading');
-  const bar=$('loading-bar'),stg=document.querySelectorAll('.load-stage');
-  bar.style.width='0%';
-  stg.forEach(s=>{s.classList.remove('active','done')});
-  const orig=['🔭 Анализируем твои интересы...','📡 Ищем подходящие возможности...','🗺️ Строим персональный маршрут...'];
-  stg.forEach((s,i)=>{s.textContent=orig[i]});
-  stg[0].classList.add('active');
+// ═══ LOADING ═══
+function load(){
+  show('screen-loading');
+  const b=$('lb'),ss=document.querySelectorAll('.ls');
+  b.style.width='0';
+  const tx=['🔭 Анализируем твои интересы...','📡 Ищем подходящие возможности...','🗺️ Строим персональный маршрут...'];
+  ss.forEach((s,i)=>{s.textContent=tx[i];s.classList.remove('active','done')});
+  ss[0].classList.add('active');
   let p=0;
   const iv=setInterval(()=>{
-    p+=2;bar.style.width=p+'%';
-    if(p>=33){stg[0].classList.remove('active');stg[0].classList.add('done');stg[0].textContent='✅'+orig[0].slice(1);stg[1].classList.add('active')}
-    if(p>=66){stg[1].classList.remove('active');stg[1].classList.add('done');stg[1].textContent='✅'+orig[1].slice(1);stg[2].classList.add('active')}
-    if(p>=100){clearInterval(iv);stg[2].classList.remove('active');stg[2].classList.add('done');stg[2].textContent='✅'+orig[2].slice(1);setTimeout(compute,400)}
+    p+=2;b.style.width=p+'%';
+    if(p>=33){ss[0].classList.remove('active');ss[0].classList.add('done');ss[0].textContent='✅'+tx[0].slice(1);ss[1].classList.add('active')}
+    if(p>=66){ss[1].classList.remove('active');ss[1].classList.add('done');ss[1].textContent='✅'+tx[1].slice(1);ss[2].classList.add('active')}
+    if(p>=100){clearInterval(iv);ss[2].classList.remove('active');ss[2].classList.add('done');ss[2].textContent='✅'+tx[2].slice(1);setTimeout(calc,400)}
   },50);
 }
 
-// ══════════════════════════════════════════════════════
-//  SCORING & COMPUTE
-// ══════════════════════════════════════════════════════
-function score(opp,ans){
+// ═══ SCORING ═══
+function sc(op,a){
   let t=0;
-  for(const d of Object.keys(W)){
-    const u=ans[d]||[],o=opp.tags[d]||[];
-    if(!u.length||!o.length) continue;
+  for(const d of Object.keys(WT)){
+    const u=a[d]||[],o=op.tg[d]||[];
+    if(!u.length||!o.length)continue;
     let m=0;u.forEach(x=>{if(o.includes(x))m++});
-    t+=(m/u.length)*W[d];
+    t+=(m/u.length)*WT[d];
   }
   return t;
 }
 
-function compute(){
-  const a=state.ans;
-  const scored=OPPORTUNITIES.map(o=>({...o,score:score(o,a)})).sort((x,y)=>y.score-x.score);
-  const recs=scored.filter(s=>s.score>.12).slice(0,8);
-  const interests=a.interest||[];
-  const pi=interests[0]||'it_digital';
-  const skills=a.skill||[];
-  const profs=new Set();
-  for(const i of interests)for(const s of skills){
-    const k=`${i}+${s}`;if(PROF_MAP[k])PROF_MAP[k].forEach(p=>profs.add(p));
-  }
-  if(!profs.size)for(const i of interests)for(const k of Object.keys(PROF_MAP)){
-    if(k.startsWith(i+'+')){PROF_MAP[k].forEach(p=>profs.add(p));break}
-  }
-  renderProfile(pi,a.level?.[0],interests,skills,[...profs].slice(0,6));
-  renderRecs(recs);
-  renderRoadmap(recs,pi);
-  showScreen('results');
-  $('results-scroll').scrollTop=0;
+function calc(){
+  const a=st.a;
+  const scored=OPS.map(o=>({...o,sc:sc(o,a)})).sort((a,b)=>b.sc-a.sc);
+  const recs=scored.filter(s=>s.sc>.12).slice(0,8);
+  const ints=a.interest||[],pi=ints[0]||'it',sks=a.skill||[];
+  const pr=new Set();
+  for(const i of ints)for(const s of sks){const k=i+'+'+s;if(PM[k])PM[k].forEach(p=>pr.add(p))}
+  if(!pr.size)for(const i of ints)for(const k of Object.keys(PM)){if(k.startsWith(i+'+')){PM[k].forEach(p=>pr.add(p));break}}
+
+  // profile
+  $('pi').textContent=DI[pi]||'🛰️';
+  $('pd').textContent=DL[pi]||'Космическая отрасль';
+  $('pl').textContent=LL[a.level?.[0]]||'';
+  $('pt').innerHTML=[...ints.map(i=>DL[i]),...sks.map(s=>SL[s])].filter(Boolean).map(t=>`<span>${t}</span>`).join('');
+  $('plist').innerHTML=[...pr].slice(0,6).map(p=>`<li>${p}</li>`).join('')||'<li>Пройдите опрос подробнее</li>';
+
+  // recs
+  if(!recs.length){$('rlist').innerHTML='<p style="text-align:center;color:var(--t2);padding:40px">Не найдено. Попробуйте изменить ответы.</p>'}
+  else{$('rlist').innerHTML=recs.map(r=>{
+    const mp=Math.round(r.sc*100);
+    return`<div class="rc"><div class="rc-top"><span class="rc-type ty-${r.tp}">${r.tl}</span><span class="rc-match">${mp}%</span></div><h4>${r.n}</h4><p>${r.d}</p><div class="rc-meta"><span>🏢 ${r.org}</span><span>📍 ${r.fmt}</span></div><button class="btn-a" onclick="go('${r.url}','${r.n.replace(/'/g,"\\'")}')">  ${r.btn} →</button></div>`;
+  }).join('')}
+
+  // roadmap
+  const rm=RM[pi]||RM.it;
+  let rh=`<h3>🗺️ ${rm.t}</h3>`;
+  rm.s.forEach(s=>{rh+=`<div class="rm-s"><div class="rm-t">${s.t}</div><div class="rm-items"><div class="rm-i"><b>${s.l}</b></div></div></div>`});
+
+  const nw=recs.filter(r=>['competition','event'].includes(r.tp)).slice(0,2);
+  const sn=recs.filter(r=>['internship','education'].includes(r.tp)).slice(0,2);
+  const ft=recs.filter(r=>['job','project'].includes(r.tp)).slice(0,2);
+  if(!nw.length&&recs[0])nw.push(recs[0]);
+  if(!sn.length&&recs[1])sn.push(recs[1]);
+  if(!ft.length&&recs[2])ft.push(recs[2]);
+
+  function ri(arr){return arr.length?arr.map(i=>`<div class="rm-i"><b>${i.n}</b><small>${i.tl} · ${i.org} · <a href="${i.url}" target="_blank" style="color:var(--acl)">${i.btn}</a></small></div>`).join(''):'<div class="rm-i"><b>Исследуй keytostart.space</b></div>'}
+
+  rh+=`<h3 style="margin-top:24px">⚡ Твои ближайшие шаги</h3>`;
+  rh+=`<div class="rm-s"><div class="rm-t">⚡ Сейчас</div><div class="rm-items">${ri(nw)}</div></div>`;
+  rh+=`<div class="rm-s"><div class="rm-t">📆 1–6 мес.</div><div class="rm-items">${ri(sn)}</div></div>`;
+  rh+=`<div class="rm-s"><div class="rm-t">🚀 Перспектива</div><div class="rm-items">${ri(ft)}</div></div>`;
+  $('road').innerHTML=rh;
+
+  // show & reset tab
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tp').forEach(t=>t.classList.remove('active'));
+  document.querySelector('[data-t="profile"]').classList.add('on');
+  $('tp-profile').classList.add('active');
+  show('screen-results');
+  $('res-mid').scrollTop=0;
 }
 
-// ══════════════════════════════════════════════════════
-//  RENDER RESULTS
-// ══════════════════════════════════════════════════════
-function renderProfile(dir,lvl,interests,skills,profs){
-  $('profile-icon').textContent=DIR_ICONS[dir]||'🛰️';
-  $('profile-direction').textContent=DIR_LABELS[dir]||'Космическая отрасль';
-  $('profile-level').textContent=LVL_LABELS[lvl]||'';
-  const tags=[...interests.map(i=>DIR_LABELS[i]).filter(Boolean),
-    ...skills.map(s=>SKILL_LABELS[s]).filter(Boolean)];
-  $('profile-tags').innerHTML=tags.map(t=>`<span class="profile-tag">${t}</span>`).join('');
-  $('professions-list').innerHTML=profs.length
-    ?profs.map(p=>`<li>${p}</li>`).join('')
-    :'<li>Пройдите опрос подробнее для подбора профессий</li>';
-}
+// ═══ ACTIONS ═══
+window.go=function(u,n){toast('Переход: '+n);if(u)setTimeout(()=>open(u,'_blank'),500)};
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 
-function renderRecs(recs){
-  const c=$('recommendations-list');
-  if(!recs.length){c.innerHTML='<p style="text-align:center;color:var(--t2);padding:40px">Не найдено подходящих возможностей. Попробуйте изменить ответы.</p>';return}
-  c.innerHTML=recs.map((r,i)=>{
-    const mp=Math.round(r.score*100);
-    return`<div class="rec-card" style="animation:fadeIn ${.2+i*.07}s ease">
-      <div class="rec-card-header">
-        <span class="rec-card-type type-${r.type}">${r.typeLabel}</span>
-        <span class="rec-match">${mp}% совпадение</span>
-      </div>
-      <h4>${r.title}</h4>
-      <p>${r.description}</p>
-      <div class="rec-card-meta">
-        <span class="rec-meta-item">🏢 ${r.organization}</span>
-        <span class="rec-meta-item">📍 ${r.format}</span>
-      </div>
-      <button class="btn-action" onclick="doAction('${r.actionUrl}','${r.title.replace(/'/g,"\\'")}')">${r.actionText} →</button>
-    </div>`;
-  }).join('');
-}
-
-function renderRoadmap(recs,primaryInterest){
-  const c=$('roadmap');
-  const rm=CAREER_ROADMAPS[primaryInterest]||CAREER_ROADMAPS['it_digital'];
-
-  let html=`<h3 style="margin-bottom:18px">🗺️ ${rm.title}</h3>`;
-  rm.steps.forEach(step=>{
-    html+=`<div class="roadmap-stage">
-      <div class="roadmap-stage-time">${step.time}</div>
-      <div class="roadmap-items"><div class="roadmap-item">
-        <div class="roadmap-item-title">${step.label}</div>
-      </div></div></div>`;
-  });
-
-  const now=recs.filter(r=>['competition','event'].includes(r.type)).slice(0,2);
-  const soon=recs.filter(r=>['internship','education'].includes(r.type)).slice(0,2);
-  const fut=recs.filter(r=>['job','project'].includes(r.type)).slice(0,2);
-  if(!now.length&&recs.length>0)now.push(recs[0]);
-  if(!soon.length&&recs.length>1)soon.push(recs[Math.min(1,recs.length-1)]);
-  if(!fut.length&&recs.length>2)fut.push(recs[Math.min(2,recs.length-1)]);
-
-  function items(arr){
-    if(!arr.length)return'<div class="roadmap-item"><div class="roadmap-item-title">Исследуй возможности на keytostart.space</div></div>';
-    return arr.map(i=>`<div class="roadmap-item">
-      <div class="roadmap-item-title">${i.title}</div>
-      <div class="roadmap-item-sub">${i.typeLabel} · ${i.organization} · <a href="${i.actionUrl}" target="_blank" rel="noopener" style="color:var(--accent-l);text-decoration:underline">${i.actionText}</a></div>
-    </div>`).join('');
-  }
-
-  html+=`<h3 style="margin:28px 0 18px">⚡ Твои ближайшие шаги</h3>`;
-  html+=`
-    <div class="roadmap-stage"><div class="roadmap-stage-time">⚡ Сейчас (0–1 мес.)</div><div class="roadmap-items">${items(now)}</div></div>
-    <div class="roadmap-stage"><div class="roadmap-stage-time">📆 Ближайшее будущее (1–6 мес.)</div><div class="roadmap-items">${items(soon)}</div></div>
-    <div class="roadmap-stage"><div class="roadmap-stage-time">🚀 Перспектива (6–12+ мес.)</div><div class="roadmap-items">${items(fut)}</div></div>`;
-
-  c.innerHTML=html;
-}
-
-// ══════════════════════════════════════════════════════
-//  ACTIONS & UTILS
-// ══════════════════════════════════════════════════════
-window.doAction=function(url,title){
-  showToast('Переход: '+title);
-  if(url&&url!=='#')setTimeout(()=>window.open(url,'_blank'),500);
-};
-
-function showToast(msg){
-  const t=$('toast');t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
-}
-
-// ══════════════════════════════════════════════════════
-//  TABS
-// ══════════════════════════════════════════════════════
+// ═══ TABS ═══
 document.querySelectorAll('.tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
-    $('results-scroll').scrollTop=0;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+    document.querySelectorAll('.tp').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('on');
+    $('tp-'+tab.dataset.t).classList.add('active');
+    $('res-mid').scrollTop=0;
   });
 });
 
-// ══════════════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════════════
-$('btn-start').addEventListener('click',()=>{
-  state.cur=0;state.ans={};renderQ(0);showScreen('quiz');
-});
-
-$('btn-quiz-back').addEventListener('click',()=>{
-  if(state.cur>0){state.cur--;renderQ(state.cur)}
-  else showScreen('landing');
-});
-
-$('btn-next-fixed').addEventListener('click',nextQ);
-
-$('btn-restart').addEventListener('click',()=>{
-  state.cur=0;state.ans={};showScreen('landing');
-});
-
+// ═══ INIT ═══
+$('btn-start').addEventListener('click',()=>{st.c=0;st.a={};renderQ();show('screen-quiz')});
+$('btn-back').addEventListener('click',()=>{if(st.c>0){st.c--;renderQ()}else show('screen-landing')});
+$('btn-next').addEventListener('click',()=>{if(st.c<QS.length-1){st.c++;renderQ()}else load()});
+$('btn-again').addEventListener('click',()=>{st.c=0;st.a={};show('screen-landing')});
 $('btn-share').addEventListener('click',()=>{
-  const dir=$('profile-direction').textContent;
-  const txt=`🚀 Мой космический маршрут: ${dir}! Найди свой путь в Роскосмосе → keytostart.space`;
-  if(navigator.share){
-    navigator.share({title:'Космический Навигатор — Роскосмос',text:txt,url:'https://keytostart.space'}).catch(()=>{});
-  } else if(navigator.clipboard){
-    navigator.clipboard.writeText(txt)
-      .then(()=>showToast('✅ Скопировано в буфер обмена!'))
-      .catch(()=>showToast('Поделись ссылкой: keytostart.space'));
-  } else showToast('Поделись ссылкой: keytostart.space');
+  const t=`🚀 Мой маршрут: ${$('pd').textContent}! Найди свой путь → keytostart.space`;
+  if(navigator.share)navigator.share({title:'КосмоNav',text:t,url:'https://keytostart.space'}).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('✅ Скопировано!')).catch(()=>toast(t));
+  else toast(t);
 });

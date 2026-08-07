@@ -188,7 +188,7 @@ function load(){
   show('screen-loading');
   const b=$('lb'),ss=document.querySelectorAll('.ls');
   b.style.width='0';
-  const tx=['🔭 Анализируем твои интересы...','📡 Ищем подходящие возможности...','🗺️ Строим персональный маршрут...'];
+  const tx=['🔭Анализируем твои интересы...','📡Ищем подходящие возможности...','🗺️Строим персональный маршрут...'];
   ss.forEach((s,i)=>{s.textContent=tx[i];s.classList.remove('active','done')});
   ss[0].classList.add('active');
   let p=0;

@@ -134,11 +134,7 @@ function show(id){
 // ═══ QUIZ ═══
 function renderQ(){
   const q=QS[st.c],sel=st.a[q.id]||[];
-
-  // title in fixed top
   $('q-title').innerHTML=`<h2>${q.t}</h2><p>${q.s}</p>`;
-
-  // options in scrollable middle
   let h='';
   if(q.m) h+=`<div class="m-hint">💡 Можно выбрать до ${q.mx}</div>`;
   h+='<div class="q-opts">';
@@ -147,17 +143,11 @@ function renderQ(){
   });
   h+='</div>';
   $('q-options').innerHTML=h;
-
-  // progress
   $('bar').style.width=((st.c+1)/QS.length*100)+'%';
   $('bar-label').textContent=(st.c+1)+'/'+QS.length;
-
-  // next button
   const b=$('btn-next');
   b.textContent=st.c===QS.length-1?'Получить маршрут 🚀':'Далее →';
   b.disabled=!sel.length;
-
-  // bind
   $('q-options').querySelectorAll('.q-opt').forEach(el=>{
     el.addEventListener('click',()=>{
       const v=el.dataset.v;
@@ -179,7 +169,6 @@ function renderQ(){
       $('btn-next').disabled=!(st.a[q.id]||[]).length;
     });
   });
-
   $('quiz-mid').scrollTop=0;
 }
 
@@ -221,21 +210,18 @@ function calc(){
   for(const i of ints)for(const s of sks){const k=i+'+'+s;if(PM[k])PM[k].forEach(p=>pr.add(p))}
   if(!pr.size)for(const i of ints)for(const k of Object.keys(PM)){if(k.startsWith(i+'+')){PM[k].forEach(p=>pr.add(p));break}}
 
-  // profile
   $('pi').textContent=DI[pi]||'🛰️';
   $('pd').textContent=DL[pi]||'Космическая отрасль';
   $('pl').textContent=LL[a.level?.[0]]||'';
   $('pt').innerHTML=[...ints.map(i=>DL[i]),...sks.map(s=>SL[s])].filter(Boolean).map(t=>`<span>${t}</span>`).join('');
   $('plist').innerHTML=[...pr].slice(0,6).map(p=>`<li>${p}</li>`).join('')||'<li>Пройдите опрос подробнее</li>';
 
-  // recs
   if(!recs.length){$('rlist').innerHTML='<p style="text-align:center;color:var(--t2);padding:40px">Не найдено. Попробуйте изменить ответы.</p>'}
   else{$('rlist').innerHTML=recs.map(r=>{
     const mp=Math.round(r.sc*100);
     return`<div class="rc"><div class="rc-top"><span class="rc-type ty-${r.tp}">${r.tl}</span><span class="rc-match">${mp}%</span></div><h4>${r.n}</h4><p>${r.d}</p><div class="rc-meta"><span>🏢 ${r.org}</span><span>📍 ${r.fmt}</span></div><button class="btn-a" onclick="go('${r.url}','${r.n.replace(/'/g,"\\'")}')">  ${r.btn} →</button></div>`;
   }).join('')}
 
-  // roadmap
   const rm=RM[pi]||RM.it;
   let rh=`<h3>🗺️ ${rm.t}</h3>`;
   rm.s.forEach(s=>{rh+=`<div class="rm-s"><div class="rm-t">${s.t}</div><div class="rm-items"><div class="rm-i"><b>${s.l}</b></div></div></div>`});
@@ -255,11 +241,14 @@ function calc(){
   rh+=`<div class="rm-s"><div class="rm-t">🚀 Перспектива</div><div class="rm-items">${ri(ft)}</div></div>`;
   $('road').innerHTML=rh;
 
-  // show & reset tab
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.tp').forEach(t=>t.classList.remove('active'));
   document.querySelector('[data-t="profile"]').classList.add('on');
   $('tp-profile').classList.add('active');
+
+  // ★ Показать кнопку подачи заявления
+  $('employment-btn-container').style.display='block';
+
   show('screen-results');
   $('res-mid').scrollTop=0;
 }
@@ -292,125 +281,73 @@ $('btn-share').addEventListener('click',()=>{
 });
 
 /* ============================================================
-   ЗАЯВЛЕНИЕ НА ТРУДОУСТРОЙСТВО — логика
+   ЗАЯВЛЕНИЕ НА ТРУДОУСТРОЙСТВО
    ============================================================ */
 
-// ---- Показать кнопку после завершения опроса ----
-// Вызовите showEmploymentButton() в том месте, где опрос завершается
-function showEmploymentButton() {
-  const btnContainer = document.getElementById('employment-btn-container');
-  if (btnContainer) {
-    btnContainer.style.display = 'block';
-    btnContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+// Открытие модального окна
+$('openEmploymentForm').addEventListener('click',()=>{
+  $('employmentModal').style.display='flex';
+  document.body.style.overflow='hidden';
+});
+
+// Закрытие по крестику
+$('closeModal').addEventListener('click',()=>{
+  $('employmentModal').style.display='none';
+  document.body.style.overflow='';
+});
+
+// Закрытие по клику на оверлей
+$('employmentModal').addEventListener('click',(e)=>{
+  if(e.target===$('employmentModal')){
+    $('employmentModal').style.display='none';
+    document.body.style.overflow='';
   }
-}
+});
 
-// ---- Открытие / закрытие модального окна ----
-document.addEventListener('DOMContentLoaded', () => {
+// Отправка формы на почту Роскосмоса
+$('employmentForm').addEventListener('submit',(e)=>{
+  e.preventDefault();
 
-  const openBtn   = document.getElementById('openEmploymentForm');
-  const modal     = document.getElementById('employmentModal');
-  const closeBtn  = document.getElementById('closeModal');
-  const form      = document.getElementById('employmentForm');
+  const d={
+    lastname:   $('emp-lastname').value.trim(),
+    firstname:  $('emp-firstname').value.trim(),
+    middlename: $('emp-middlename').value.trim(),
+    birthdate:  $('emp-birthdate').value,
+    gender:     $('emp-gender').value,
+    email:      $('emp-email').value.trim(),
+    phone:      $('emp-phone').value.trim(),
+    city:       $('emp-city').value.trim(),
+    education:  $('emp-education').value,
+    university: $('emp-university').value.trim(),
+    specialty:  $('emp-specialty').value.trim(),
+    experience: $('emp-experience').value,
+    position:   $('emp-position').value.trim(),
+    about:      $('emp-about').value.trim()
+  };
 
-  if (openBtn && modal) {
-    openBtn.addEventListener('click', () => {
-      modal.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-    });
-  }
+  const eduL={
+    'secondary':'Среднее','secondary-special':'Среднее специальное',
+    'incomplete-higher':'Неоконченное высшее','bachelor':'Бакалавриат',
+    'specialist':'Специалитет','master':'Магистратура',
+    'phd':'Аспирантура / Кандидат наук','doctor':'Докторантура / Доктор наук'
+  };
 
-  if (closeBtn && modal) {
-    closeBtn.addEventListener('click', () => {
-      modal.style.display = 'none';
-      document.body.style.overflow = '';
-    });
-  }
+  const subject=encodeURIComponent(`Заявление на трудоустройство — ${d.lastname} ${d.firstname}`);
 
-  // Закрытие по клику вне окна
-  if (modal) {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-      }
-    });
-  }
+  const body=encodeURIComponent(
+    `ЗАЯВЛЕНИЕ НА ТРУДОУСТРОЙСТВО\n================================\n\n`+
+    `ЛИЧНЫЕ ДАННЫЕ\nФамилия: ${d.lastname}\nИмя: ${d.firstname}\n`+
+    `Отчество: ${d.middlename||'—'}\nДата рождения: ${d.birthdate}\n`+
+    `Пол: ${d.gender==='male'?'Мужской':'Женский'}\n\n`+
+    `КОНТАКТНЫЕ ДАННЫЕ\nEmail: ${d.email}\nТелефон: ${d.phone}\nГород: ${d.city}\n\n`+
+    `ОБРАЗОВАНИЕ И ОПЫТ\nОбразование: ${eduL[d.education]||d.education}\n`+
+    `Учебное заведение: ${d.university||'—'}\nСпециальность: ${d.specialty||'—'}\n`+
+    `Опыт работы: ${d.experience?d.experience+' лет':'—'}\n`+
+    `Желаемая должность: ${d.position}\n\nДОПОЛНИТЕЛЬНО\n${d.about||'—'}\n`
+  );
 
-  // ---- Отправка формы на почту Роскосмоса ----
-  if (form) {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-
-      // Собираем данные
-      const data = {
-        lastname:   document.getElementById('emp-lastname').value.trim(),
-        firstname:  document.getElementById('emp-firstname').value.trim(),
-        middlename: document.getElementById('emp-middlename').value.trim(),
-        birthdate:  document.getElementById('emp-birthdate').value,
-        gender:     document.getElementById('emp-gender').value,
-        email:      document.getElementById('emp-email').value.trim(),
-        phone:      document.getElementById('emp-phone').value.trim(),
-        city:       document.getElementById('emp-city').value.trim(),
-        education:  document.getElementById('emp-education').value,
-        university: document.getElementById('emp-university').value.trim(),
-        specialty:  document.getElementById('emp-specialty').value.trim(),
-        experience: document.getElementById('emp-experience').value,
-        position:   document.getElementById('emp-position').value.trim(),
-        about:      document.getElementById('emp-about').value.trim(),
-      };
-
-      // Формируем тело письма
-      const educationLabels = {
-        'secondary': 'Среднее',
-        'secondary-special': 'Среднее специальное',
-        'incomplete-higher': 'Неоконченное высшее',
-        'bachelor': 'Бакалавриат',
-        'specialist': 'Специалитет',
-        'master': 'Магистратура',
-        'phd': 'Аспирантура / Кандидат наук',
-        'doctor': 'Докторантура / Доктор наук',
-      };
-
-      const genderLabel = data.gender === 'male' ? 'Мужской' : 'Женский';
-
-      const subject = encodeURIComponent(
-        `Заявление на трудоустройство — ${data.lastname} ${data.firstname}`
-      );
-
-      const body = encodeURIComponent(
-        `ЗАЯВЛЕНИЕ НА ТРУДОУСТРОЙСТВО\n` +
-        `================================\n\n` +
-        `ЛИЧНЫЕ ДАННЫЕ\n` +
-        `Фамилия: ${data.lastname}\n` +
-        `Имя: ${data.firstname}\n` +
-        `Отчество: ${data.middlename || '—'}\n` +
-        `Дата рождения: ${data.birthdate}\n` +
-        `Пол: ${genderLabel}\n\n` +
-        `КОНТАКТНЫЕ ДАННЫЕ\n` +
-        `Email: ${data.email}\n` +
-        `Телефон: ${data.phone}\n` +
-        `Город: ${data.city}\n\n` +
-        `ОБРАЗОВАНИЕ И ОПЫТ\n` +
-        `Образование: ${educationLabels[data.education] || data.education}\n` +
-        `Учебное заведение: ${data.university || '—'}\n` +
-        `Специальность: ${data.specialty || '—'}\n` +
-        `Опыт работы: ${data.experience ? data.experience + ' лет' : '—'}\n` +
-        `Желаемая должность: ${data.position}\n\n` +
-        `ДОПОЛНИТЕЛЬНО\n` +
-        `${data.about || '—'}\n`
-      );
-
-      // Открываем почтовый клиент с адресом Роскосмоса
-      const mailtoLink = `mailto:ok@roscosmos.ru?subject=${subject}&body=${body}`;
-      window.location.href = mailtoLink;
-
-      // Уведомление
-      alert('Почтовый клиент открыт. Отправьте письмо для подачи заявления.');
-
-      // Закрываем модалку
-      modal.style.display = 'none';
-      document.body.style.overflow = '';
-    });
-  }
+  window.location.href=`mailto:ok@roscosmos.ru?subject=${subject}&body=${body}`;
+  toast('📧 Почтовый клиент открыт. Отправьте письмо.');
+  $('employmentModal').style.display='none';
+  document.body.style.overflow='';
 });

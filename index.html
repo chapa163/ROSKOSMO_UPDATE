@@ -2,247 +2,122 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0a0e27">
+  <meta name="description" content="Цифровой помощник для навигации по карьерным возможностям Роскосмоса">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>КосмоNav — Найди свой путь в космосе</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<canvas id="stars-canvas"></canvas>
+  <canvas id="stars-canvas"></canvas>
 
-<!-- ЛЕНДИНГ -->
-<div id="screen-landing" class="screen active">
-  <div class="screen-center">
-    <div class="landing">
-      <div class="rocket-icon"><img src="icons/icon-192.png" alt="КосмоNav" class="logo-img"></div>
-      <h1>Космический<br><span class="grad">Навигатор</span></h1>
-      <p class="sub">РОСКОСМОС</p>
-      <p class="desc">Найди свой путь в космической отрасли<br>за <strong>3 минуты</strong></p>
-      <p class="hint">Ответь на 7 вопросов — получи персональный маршрут развития, подходящие стажировки, мероприятия и вакансии</p>
-      <button class="btn-main glow" id="btn-start">Начать путешествие 🚀</button>
-      <p class="note">Без регистрации · Без персональных данных · Бесплатно</p>
-    </div>
-  </div>
-</div>
-
-<!-- ОПРОС -->
-<div id="screen-quiz" class="screen">
-  <div class="panel">
-    <div class="panel-top">
-      <div class="quiz-head">
-        <button class="btn-back" id="btn-back">← Назад</button>
-        <div class="bar-wrap"><div class="bar" id="bar"></div></div>
-        <span class="bar-label" id="bar-label">1/7</span>
-      </div>
-      <div id="q-title"></div>
-    </div>
-    <div class="panel-mid" id="quiz-mid">
-      <div class="panel-mid-in" id="q-options"></div>
-    </div>
-    <div class="panel-bot">
-      <button class="btn-main" id="btn-next" disabled>Далее →</button>
-    </div>
-  </div>
-</div>
-
-<!-- ЗАГРУЗКА -->
-<div id="screen-loading" class="screen">
-  <div class="screen-center">
-    <div class="loading">
-      <div class="rocket-fly">🚀</div>
-      <p class="ls active">🔭 Анализируем твои интересы...</p>
-      <p class="ls">📡 Ищем подходящие возможности...</p>
-      <p class="ls">🗺️ Строим персональный маршрут...</p>
-      <div class="lb-wrap"><div class="lb" id="lb"></div></div>
-    </div>
-  </div>
-</div>
-
-<!-- РЕЗУЛЬТАТЫ -->
-<div id="screen-results" class="screen">
-  <div class="panel">
-    <div class="panel-top">
-      <h2 class="res-title">🚀 Твой космический маршрут</h2>
-      <div class="tabs">
-        <button class="tab on" data-t="profile">👤 Профиль</button>
-        <button class="tab" data-t="recs">🎯 Рекомендации</button>
-        <button class="tab" data-t="road">🗺️ Маршрут</button>
+  <!-- ======== ЛЕНДИНГ ======== -->
+  <section id="screen-landing" class="screen active">
+    <div class="screen-scroll">
+      <div class="landing-content">
+        <div class="logo-area">
+          <div class="rocket-icon">🚀</div>
+          <h1>Космический<br><span class="gradient-text">Навигатор</span></h1>
+          <p class="subtitle">Роскосмос</p>
+        </div>
+        <p class="landing-desc">Найди свой путь в космической отрасли<br>за <strong>3 минуты</strong></p>
+        <p class="landing-sub">Ответь на 7 вопросов — получи персональный маршрут развития, подходящие стажировки, мероприятия и вакансии</p>
+        <button class="btn-primary btn-glow" id="btn-start">Начать путешествие <span class="btn-rocket">🚀</span></button>
+        <p class="landing-note">Без регистрации · Без персональных данных · Бесплатно</p>
       </div>
     </div>
-    <div class="panel-mid" id="res-mid">
-      <div class="panel-mid-in">
-        <div class="tp active" id="tp-profile">
-          <div class="card-profile">
-            <div class="pi" id="pi">🛰️</div>
-            <h3 id="pd">Направление</h3>
-            <p class="pl" id="pl"></p>
-            <div class="tags" id="pt"></div>
+  </section>
+
+  <!-- ======== ОПРОС ======== -->
+  <section id="screen-quiz" class="screen">
+    <div class="fixed-layout">
+      <!-- Fixed top -->
+      <div class="fixed-top quiz-top">
+        <div class="quiz-header">
+          <button class="btn-back" id="btn-quiz-back">← Назад</button>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
           </div>
-          <div class="card-prof">
-            <h4>💼 Подходящие профессии</h4>
-            <ul id="plist"></ul>
+          <span class="progress-label" id="progress-text">1/7</span>
+        </div>
+      </div>
+      <!-- Scrollable middle -->
+      <div class="fixed-middle" id="quiz-scroll">
+        <div class="fixed-middle-inner quiz-inner">
+          <div id="quiz-body"></div>
+        </div>
+      </div>
+      <!-- Fixed bottom -->
+      <div class="fixed-bottom quiz-bottom">
+        <button class="btn-primary" id="btn-next-fixed" disabled>Далее →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== ЗАГРУЗКА ======== -->
+  <section id="screen-loading" class="screen">
+    <div class="screen-scroll">
+      <div class="loading-content">
+        <div class="rocket-launch">🚀</div>
+        <div class="loading-stages">
+          <p class="load-stage active" data-stage="1">🔭 Анализируем твои интересы...</p>
+          <p class="load-stage" data-stage="2">📡 Ищем подходящие возможности...</p>
+          <p class="load-stage" data-stage="3">🗺️ Строим персональный маршрут...</p>
+        </div>
+        <div class="loading-bar-container">
+          <div class="loading-bar" id="loading-bar"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== РЕЗУЛЬТАТЫ ======== -->
+  <section id="screen-results" class="screen">
+    <div class="fixed-layout">
+      <!-- Fixed top -->
+      <div class="fixed-top results-top">
+        <h2 class="results-title">🚀 Твой космический маршрут</h2>
+        <div class="tabs">
+          <button class="tab active" data-tab="profile">👤 Профиль</button>
+          <button class="tab" data-tab="recommendations">🎯 Рекомендации</button>
+          <button class="tab" data-tab="roadmap">🗺️ Маршрут</button>
+        </div>
+      </div>
+      <!-- Scrollable middle -->
+      <div class="fixed-middle" id="results-scroll">
+        <div class="fixed-middle-inner results-inner">
+          <div class="tab-content active" id="tab-profile">
+            <div class="profile-card">
+              <div class="profile-icon" id="profile-icon">🛰️</div>
+              <h3 id="profile-direction">Направление</h3>
+              <p id="profile-level" class="profile-level"></p>
+              <div class="profile-tags" id="profile-tags"></div>
+            </div>
+            <div class="professions-card">
+              <h4>💼 Подходящие профессии в отрасли</h4>
+              <ul id="professions-list"></ul>
+            </div>
+          </div>
+          <div class="tab-content" id="tab-recommendations">
+            <div id="recommendations-list"></div>
+          </div>
+          <div class="tab-content" id="tab-roadmap">
+            <div class="roadmap" id="roadmap"></div>
           </div>
         </div>
-        <div class="tp" id="tp-recs"><div id="rlist"></div></div>
-        <div class="tp" id="tp-road"><div class="roadmap" id="road"></div></div>
+      </div>
+      <!-- Fixed bottom -->
+      <div class="fixed-bottom results-bottom">
+        <button class="btn-primary" id="btn-share">📤 Поделиться</button>
+        <button class="btn-secondary" id="btn-restart">🔄 Заново</button>
       </div>
     </div>
-    <div class="panel-bot panel-bot-col">
-      <button class="btn-apply" id="btn-apply">📋 Подать заявление на трудоустройство</button>
-      <div class="panel-bot-row">
-        <button class="btn-main" id="btn-share">📤 Поделиться</button>
-        <button class="btn-sec" id="btn-again">🔄 Заново</button>
-      </div>
-    </div>
-  </div>
-</div>
+  </section>
 
-<!-- ФОРМА ЗАЯВЛЕНИЯ -->
-<div id="screen-apply" class="screen">
-  <div class="panel">
-    <div class="panel-top">
-      <div class="apply-head">
-        <button class="btn-back" id="btn-apply-back">← Назад к результатам</button>
-      </div>
-      <h2 class="res-title">📋 Заявление на трудоустройство</h2>
-      <p class="apply-sub">Заполните данные — мы передадим вашу заявку в HR-службу Госкорпорации «Роскосмос»</p>
-    </div>
-    <div class="panel-mid" id="apply-mid">
-      <div class="panel-mid-in">
-        <form id="apply-form" class="apply-form" autocomplete="on">
-
-          <div class="form-section">
-            <h3>👤 Личные данные</h3>
-            <div class="form-group">
-              <label for="f-surname">Фамилия <span class="req">*</span></label>
-              <input type="text" id="f-surname" name="surname" required placeholder="Иванов" autocomplete="family-name">
-            </div>
-            <div class="form-group">
-              <label for="f-name">Имя <span class="req">*</span></label>
-              <input type="text" id="f-name" name="name" required placeholder="Иван" autocomplete="given-name">
-            </div>
-            <div class="form-group">
-              <label for="f-patron">Отчество</label>
-              <input type="text" id="f-patron" name="patronymic" placeholder="Иванович" autocomplete="additional-name">
-            </div>
-            <div class="form-group">
-              <label for="f-birth">Дата рождения <span class="req">*</span></label>
-              <input type="date" id="f-birth" name="birthdate" required>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3>📞 Контактные данные</h3>
-            <div class="form-group">
-              <label for="f-email">Электронная почта <span class="req">*</span></label>
-              <input type="email" id="f-email" name="email" required placeholder="ivan@example.com" autocomplete="email">
-            </div>
-            <div class="form-group">
-              <label for="f-phone">Телефон <span class="req">*</span></label>
-              <input type="tel" id="f-phone" name="phone" required placeholder="+7 (999) 123-45-67" autocomplete="tel">
-            </div>
-            <div class="form-group">
-              <label for="f-city">Город проживания <span class="req">*</span></label>
-              <input type="text" id="f-city" name="city" required placeholder="Москва" autocomplete="address-level2">
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3>🎓 Образование и опыт</h3>
-            <div class="form-group">
-              <label for="f-edu">Образование <span class="req">*</span></label>
-              <select id="f-edu" name="education" required>
-                <option value="" disabled selected>Выберите уровень</option>
-                <option value="school">Среднее (школа)</option>
-                <option value="spo">Среднее профессиональное (СПО)</option>
-                <option value="bachelor">Бакалавриат</option>
-                <option value="specialist">Специалитет</option>
-                <option value="master">Магистратура</option>
-                <option value="phd">Аспирантура / кандидат наук</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="f-uni">Учебное заведение</label>
-              <input type="text" id="f-uni" name="university" placeholder="Название вуза / колледжа">
-            </div>
-            <div class="form-group">
-              <label for="f-spec">Специальность / направление</label>
-              <input type="text" id="f-spec" name="specialty" placeholder="Ракетостроение, IT, инженерия...">
-            </div>
-            <div class="form-group">
-              <label for="f-exp">Опыт работы</label>
-              <select id="f-exp" name="experience">
-                <option value="" disabled selected>Выберите</option>
-                <option value="none">Нет опыта</option>
-                <option value="less1">Менее 1 года</option>
-                <option value="1-3">1–3 года</option>
-                <option value="3-5">3–5 лет</option>
-                <option value="5+">Более 5 лет</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3>🚀 Предпочтения</h3>
-            <div class="form-group">
-              <label for="f-dir">Желаемое направление</label>
-              <input type="text" id="f-dir" name="direction" readonly class="form-readonly">
-            </div>
-            <div class="form-group">
-              <label for="f-pos">Желаемая должность / роль</label>
-              <input type="text" id="f-pos" name="position" placeholder="Инженер-конструктор, разработчик ПО...">
-            </div>
-            <div class="form-group">
-              <label for="f-format">Формат работы</label>
-              <select id="f-format" name="work_format">
-                <option value="" disabled selected>Выберите</option>
-                <option value="onsite">Очно</option>
-                <option value="hybrid">Гибрид</option>
-                <option value="remote">Удалённо</option>
-                <option value="any">Любой</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="f-about">О себе / мотивация</label>
-              <textarea id="f-about" name="about" rows="4" placeholder="Расскажите почему хотите работать в космической отрасли..."></textarea>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <label class="checkbox-label">
-              <input type="checkbox" id="f-agree" name="agree" required>
-              <span>Я согласен(на) на обработку персональных данных в соответствии с <a href="https://www.roscosmos.ru/privacy/" target="_blank">политикой конфиденциальности</a> <span class="req">*</span></span>
-            </label>
-          </div>
-
-        </form>
-      </div>
-    </div>
-    <div class="panel-bot">
-      <button class="btn-submit" id="btn-submit" disabled>🚀 Отправить заявку на рассмотрение</button>
-    </div>
-  </div>
-</div>
-
-<!-- УСПЕХ -->
-<div id="screen-success" class="screen">
-  <div class="screen-center">
-    <div class="landing">
-      <div class="rocket-icon success-icon">✅</div>
-      <h1>Заявка<br><span class="grad">отправлена!</span></h1>
-      <p class="desc">Ваша заявка передана в HR-службу<br>Госкорпорации «Роскосмос»</p>
-      <p class="hint">Специалист свяжется с вами в течение 5 рабочих дней по указанной электронной почте или телефону</p>
-      <div class="success-actions">
-        <button class="btn-main" id="btn-to-results">← Вернуться к результатам</button>
-        <button class="btn-sec" id="btn-to-home">🏠 На главную</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-<script src="js/app.js"></script>
+  <div class="toast" id="toast"></div>
+  <script src="js/app.js"></script>
 </body>
 </html>

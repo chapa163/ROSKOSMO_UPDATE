@@ -94,5 +94,118 @@
 
 <div class="toast" id="toast"></div>
 <script src="js/app.js"></script>
+  <!-- ============ КНОПКА ПОДАЧИ ЗАЯВЛЕНИЯ ============ -->
+<div id="employment-btn-container" style="display:none; text-align:center; margin-top:30px;">
+  <button id="openEmploymentForm" class="employment-btn">
+    🚀 Подать заявление на трудоустройство
+  </button>
+</div>
+
+<!-- ============ МОДАЛЬНОЕ ОКНО — ЗАЯВЛЕНИЕ ============ -->
+<div id="employmentModal" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+    <button id="closeModal" class="modal-close">&times;</button>
+    <h2 class="modal-title">Заявление на трудоустройство в Роскосмос</h2>
+    <form id="employmentForm">
+      <!-- Личные данные -->
+      <fieldset>
+        <legend>Личные данные</legend>
+        <div class="form-group">
+          <label for="emp-lastname">Фамилия <span class="req">*</span></label>
+          <input type="text" id="emp-lastname" name="lastname" required placeholder="Иванов">
+        </div>
+        <div class="form-group">
+          <label for="emp-firstname">Имя <span class="req">*</span></label>
+          <input type="text" id="emp-firstname" name="firstname" required placeholder="Иван">
+        </div>
+        <div class="form-group">
+          <label for="emp-middlename">Отчество</label>
+          <input type="text" id="emp-middlename" name="middlename" placeholder="Иванович">
+        </div>
+        <div class="form-group">
+          <label for="emp-birthdate">Дата рождения <span class="req">*</span></label>
+          <input type="date" id="emp-birthdate" name="birthdate" required>
+        </div>
+        <div class="form-group">
+          <label for="emp-gender">Пол <span class="req">*</span></label>
+          <select id="emp-gender" name="gender" required>
+            <option value="">— Выберите —</option>
+            <option value="male">Мужской</option>
+            <option value="female">Женский</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <!-- Контактные данные -->
+      <fieldset>
+        <legend>Контактные данные</legend>
+        <div class="form-group">
+          <label for="emp-email">Email <span class="req">*</span></label>
+          <input type="email" id="emp-email" name="email" required placeholder="example@mail.ru">
+        </div>
+        <div class="form-group">
+          <label for="emp-phone">Телефон <span class="req">*</span></label>
+          <input type="tel" id="emp-phone" name="phone" required placeholder="+7 (999) 123-45-67">
+        </div>
+        <div class="form-group">
+          <label for="emp-city">Город проживания <span class="req">*</span></label>
+          <input type="text" id="emp-city" name="city" required placeholder="Москва">
+        </div>
+      </fieldset>
+
+      <!-- Образование и опыт -->
+      <fieldset>
+        <legend>Образование и опыт</legend>
+        <div class="form-group">
+          <label for="emp-education">Образование <span class="req">*</span></label>
+          <select id="emp-education" name="education" required>
+            <option value="">— Выберите —</option>
+            <option value="secondary">Среднее</option>
+            <option value="secondary-special">Среднее специальное</option>
+            <option value="incomplete-higher">Неоконченное высшее</option>
+            <option value="bachelor">Бакалавриат</option>
+            <option value="specialist">Специалитет</option>
+            <option value="master">Магистратура</option>
+            <option value="phd">Аспирантура / Кандидат наук</option>
+            <option value="doctor">Докторантура / Доктор наук</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="emp-university">Учебное заведение</label>
+          <input type="text" id="emp-university" name="university" placeholder="МГУ, МФТИ, МАИ...">
+        </div>
+        <div class="form-group">
+          <label for="emp-specialty">Специальность</label>
+          <input type="text" id="emp-specialty" name="specialty" placeholder="Ракетостроение">
+        </div>
+        <div class="form-group">
+          <label for="emp-experience">Опыт работы (лет)</label>
+          <input type="number" id="emp-experience" name="experience" min="0" max="50" placeholder="5">
+        </div>
+        <div class="form-group">
+          <label for="emp-position">Желаемая должность <span class="req">*</span></label>
+          <input type="text" id="emp-position" name="position" required placeholder="Инженер-конструктор">
+        </div>
+      </fieldset>
+
+      <!-- Дополнительно -->
+      <fieldset>
+        <legend>Дополнительная информация</legend>
+        <div class="form-group">
+          <label for="emp-about">О себе / Сопроводительное письмо</label>
+          <textarea id="emp-about" name="about" rows="4" placeholder="Расскажите о своей мотивации и ключевых навыках..."></textarea>
+        </div>
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="emp-consent" name="consent" required>
+          <label for="emp-consent">Я даю согласие на обработку персональных данных <span class="req">*</span></label>
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <button type="submit" class="submit-btn">📧 Отправить заявление в Роскосмос</button>
+      </div>
+    </form>
+  </div>
+</div>
 </body>
 </html>

@@ -214,3 +214,162 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);-webkit-font-smoo
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--brd);border-radius:99px}
+/* ============ КНОПКА ТРУДОУСТРОЙСТВА ============ */
+.employment-btn {
+  display: inline-block;
+  padding: 16px 36px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #1a3a6b, #2d6ecf);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(26, 58, 107, 0.4);
+  letter-spacing: 0.3px;
+}
+.employment-btn:hover {
+  background: linear-gradient(135deg, #2d6ecf, #1a3a6b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26, 58, 107, 0.5);
+}
+
+/* ============ МОДАЛЬНОЕ ОКНО ============ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 30px 15px;
+  backdrop-filter: blur(4px);
+}
+.modal-content {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 640px;
+  padding: 36px 32px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalIn 0.3s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+}
+.modal-close:hover { color: #c0392b; }
+
+.modal-title {
+  text-align: center;
+  color: #1a3a6b;
+  margin-bottom: 24px;
+  font-size: 22px;
+}
+
+/* ============ ФОРМА ============ */
+#employmentForm fieldset {
+  border: 1px solid #dce3ed;
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+#employmentForm legend {
+  font-weight: 700;
+  color: #1a3a6b;
+  padding: 0 8px;
+  font-size: 15px;
+}
+.form-group {
+  margin-bottom: 14px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+.req { color: #c0392b; }
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="date"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #c8d1dc;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #2d6ecf;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 110, 207, 0.15);
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.checkbox-group input[type="checkbox"] {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+}
+.checkbox-group label {
+  font-weight: 400;
+  font-size: 13px;
+}
+
+/* ============ КНОПКА ОТПРАВКИ ============ */
+.form-actions {
+  text-align: center;
+  margin-top: 10px;
+}
+.submit-btn {
+  padding: 14px 40px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #27ae60, #1e8449);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.35);
+}
+.submit-btn:hover {
+  background: linear-gradient(135deg, #1e8449, #27ae60);
+  transform: translateY(-2px);
+}
+
+/* ============ АДАПТИВ ============ */
+@media (max-width: 480px) {
+  .modal-content { padding: 24px 16px; }
+  .employment-btn { font-size: 15px; padding: 14px 24px; }
+}

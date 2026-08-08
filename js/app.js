@@ -290,3 +290,127 @@ $('btn-share').addEventListener('click',()=>{
   else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('✅ Скопировано!')).catch(()=>toast(t));
   else toast(t);
 });
+
+/* ============================================================
+   ЗАЯВЛЕНИЕ НА ТРУДОУСТРОЙСТВО — логика
+   ============================================================ */
+
+// ---- Показать кнопку после завершения опроса ----
+// Вызовите showEmploymentButton() в том месте, где опрос завершается
+function showEmploymentButton() {
+  const btnContainer = document.getElementById('employment-btn-container');
+  if (btnContainer) {
+    btnContainer.style.display = 'block';
+    btnContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+// ---- Открытие / закрытие модального окна ----
+document.addEventListener('DOMContentLoaded', () => {
+
+  const openBtn   = document.getElementById('openEmploymentForm');
+  const modal     = document.getElementById('employmentModal');
+  const closeBtn  = document.getElementById('closeModal');
+  const form      = document.getElementById('employmentForm');
+
+  if (openBtn && modal) {
+    openBtn.addEventListener('click', () => {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    });
+  }
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    });
+  }
+
+  // Закрытие по клику вне окна
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
+  }
+
+  // ---- Отправка формы на почту Роскосмоса ----
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Собираем данные
+      const data = {
+        lastname:   document.getElementById('emp-lastname').value.trim(),
+        firstname:  document.getElementById('emp-firstname').value.trim(),
+        middlename: document.getElementById('emp-middlename').value.trim(),
+        birthdate:  document.getElementById('emp-birthdate').value,
+        gender:     document.getElementById('emp-gender').value,
+        email:      document.getElementById('emp-email').value.trim(),
+        phone:      document.getElementById('emp-phone').value.trim(),
+        city:       document.getElementById('emp-city').value.trim(),
+        education:  document.getElementById('emp-education').value,
+        university: document.getElementById('emp-university').value.trim(),
+        specialty:  document.getElementById('emp-specialty').value.trim(),
+        experience: document.getElementById('emp-experience').value,
+        position:   document.getElementById('emp-position').value.trim(),
+        about:      document.getElementById('emp-about').value.trim(),
+      };
+
+      // Формируем тело письма
+      const educationLabels = {
+        'secondary': 'Среднее',
+        'secondary-special': 'Среднее специальное',
+        'incomplete-higher': 'Неоконченное высшее',
+        'bachelor': 'Бакалавриат',
+        'specialist': 'Специалитет',
+        'master': 'Магистратура',
+        'phd': 'Аспирантура / Кандидат наук',
+        'doctor': 'Докторантура / Доктор наук',
+      };
+
+      const genderLabel = data.gender === 'male' ? 'Мужской' : 'Женский';
+
+      const subject = encodeURIComponent(
+        `Заявление на трудоустройство — ${data.lastname} ${data.firstname}`
+      );
+
+      const body = encodeURIComponent(
+        `ЗАЯВЛЕНИЕ НА ТРУДОУСТРОЙСТВО\n` +
+        `================================\n\n` +
+        `ЛИЧНЫЕ ДАННЫЕ\n` +
+        `Фамилия: ${data.lastname}\n` +
+        `Имя: ${data.firstname}\n` +
+        `Отчество: ${data.middlename || '—'}\n` +
+        `Дата рождения: ${data.birthdate}\n` +
+        `Пол: ${genderLabel}\n\n` +
+        `КОНТАКТНЫЕ ДАННЫЕ\n` +
+        `Email: ${data.email}\n` +
+        `Телефон: ${data.phone}\n` +
+        `Город: ${data.city}\n\n` +
+        `ОБРАЗОВАНИЕ И ОПЫТ\n` +
+        `Образование: ${educationLabels[data.education] || data.education}\n` +
+        `Учебное заведение: ${data.university || '—'}\n` +
+        `Специальность: ${data.specialty || '—'}\n` +
+        `Опыт работы: ${data.experience ? data.experience + ' лет' : '—'}\n` +
+        `Желаемая должность: ${data.position}\n\n` +
+        `ДОПОЛНИТЕЛЬНО\n` +
+        `${data.about || '—'}\n`
+      );
+
+      // Открываем почтовый клиент с адресом Роскосмоса
+      const mailtoLink = `mailto:ok@roscosmos.ru?subject=${subject}&body=${body}`;
+      window.location.href = mailtoLink;
+
+      // Уведомление
+      alert('Почтовый клиент открыт. Отправьте письмо для подачи заявления.');
+
+      // Закрываем модалку
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    });
+  }
+});

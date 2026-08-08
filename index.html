@@ -86,28 +86,24 @@
       </div>
     </div>
     <div class="panel-bot">
+      <!-- ★ КНОПКА ВНУТРИ screen-results -->
+      <div id="employment-btn-container" style="display:none; text-align:center; width:100%; margin-bottom:10px;">
+        <button id="openEmploymentForm" class="employment-btn">
+          🚀 Подать заявление на трудоустройство
+        </button>
+      </div>
       <button class="btn-main" id="btn-share">📤 Поделиться</button>
       <button class="btn-sec" id="btn-again">🔄 Заново</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-<script src="js/app.js"></script>
-  <!-- ============ КНОПКА ПОДАЧИ ЗАЯВЛЕНИЯ ============ -->
-<div id="employment-btn-container" style="display:none; text-align:center; margin-top:30px;">
-  <button id="openEmploymentForm" class="employment-btn">
-    🚀 Подать заявление на трудоустройство
-  </button>
-</div>
-
-<!-- ============ МОДАЛЬНОЕ ОКНО — ЗАЯВЛЕНИЕ ============ -->
+<!-- ★ МОДАЛЬНОЕ ОКНО — вне экранов, но ПЕРЕД скриптом -->
 <div id="employmentModal" class="modal-overlay" style="display:none;">
   <div class="modal-content">
     <button id="closeModal" class="modal-close">&times;</button>
     <h2 class="modal-title">Заявление на трудоустройство в Роскосмос</h2>
     <form id="employmentForm">
-      <!-- Личные данные -->
       <fieldset>
         <legend>Личные данные</legend>
         <div class="form-group">
@@ -136,7 +132,6 @@
         </div>
       </fieldset>
 
-      <!-- Контактные данные -->
       <fieldset>
         <legend>Контактные данные</legend>
         <div class="form-group">
@@ -153,7 +148,6 @@
         </div>
       </fieldset>
 
-      <!-- Образование и опыт -->
       <fieldset>
         <legend>Образование и опыт</legend>
         <div class="form-group">
@@ -188,7 +182,6 @@
         </div>
       </fieldset>
 
-      <!-- Дополнительно -->
       <fieldset>
         <legend>Дополнительная информация</legend>
         <div class="form-group">
@@ -207,5 +200,10 @@
     </form>
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ★ Скрипт ПОСЛЕ всей разметки -->
+<script src="js/app.js"></script>
 </body>
 </html>
